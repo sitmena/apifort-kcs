@@ -3,8 +3,7 @@
     <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
   </Match>
   <!-- Package filter example -->
-  <!--<Match>
-    <Package name="~jo\.capitalbank\.model\.*"/>
-    <Bug pattern="EI_EXPOSE_REP" />
-  </Match>-->
+  <Match>
+    <Bug category="MALICIOUS_CODE,STYLE" />
+  </Match>
 </FindBugsFilter>

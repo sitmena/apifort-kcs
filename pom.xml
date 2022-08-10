@@ -66,35 +66,27 @@
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
     </dependency>
-
-
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
     </dependency>
-
-
   </dependencies>
-  <build>
 
+  <build>
     <extensions>
       <extension>
         <groupId>kr.motd.maven</groupId>
         <artifactId>os-maven-plugin</artifactId>
-<!--        <version>${os-maven-plugin-version}</version>-->
       </extension>
     </extensions>
-
 
     <plugins>
       <plugin>
@@ -114,28 +106,41 @@
       </plugin>
 
 
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>4.7.0.0</version>
+        <dependencies>
+          <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
+          <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs</artifactId>
+            <version>4.7.1</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <excludeFilterFile>spotbugs-security-exclude.xml</excludeFilterFile>
+        </configuration>
+      </plugin>
 
-<!--      <plugin>-->
-<!--        <groupId>com.github.spotbugs</groupId>-->
-<!--        <artifactId>spotbugs-maven-plugin</artifactId>-->
-<!--        <version>4.4.2.2</version>-->
-<!--        <configuration>-->
-<!--          <excludeFilterFile>spotbugs-security-exclude.xml</excludeFilterFile>-->
-<!--        </configuration>-->
-<!--      </plugin>-->
-
-<!--      <plugin>-->
-<!--        <groupId>com.spotify</groupId>-->
-<!--        <artifactId>dockerfile-maven-plugin</artifactId>-->
-<!--        <configuration>-->
-<!--          <skip>true</skip>-->
-<!--        </configuration>-->
-<!--      </plugin>-->
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>dockerfile-maven-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>org.owasp</groupId>
         <artifactId>dependency-check-maven</artifactId>
         <version>7.1.1</version>
+        <configuration>
+          <!-- .Disable Net content-->
+          <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+          <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
+          <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -198,7 +203,6 @@
         <quarkus.package.type>native</quarkus.package.type>
       </properties>
     </profile>
-
 
     <profile>
       <id>development</id>
