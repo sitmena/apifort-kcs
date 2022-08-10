@@ -1,0 +1,108 @@
+package com.sitech.service;
+
+import com.sitech.oidc.keycloak.ServerConnection;
+import com.sitech.users.AddUserRequest;
+import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.RoleResource;
+import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+@ApplicationScoped
+//@RegisterForReflection
+public class UserService {
+
+    @Inject
+    ServerConnection connection;
+    @Inject
+    RealmService realmService;
+    private static final Logger log = LoggerFactory.getLogger(RealmService.class);
+
+//    void onStart(@Observes StartupEvent ev) {
+//        log.info("The application is starting...");
+//        addUserRole("ajweh","ajweh","uma_authorization");
+//    }
+
+    public Response addUser(AddUserRequest request) {
+        CredentialRepresentation credential = new CredentialRepresentation();
+        credential.setType(CredentialRepresentation.PASSWORD);
+        credential.setValue(request.getPass());
+        UserRepresentation user = new UserRepresentation();
+        user.setUsername(request.getUserName());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setCredentials(Arrays.asList(credential));
+        user.setEnabled(true);
+        user.setRealmRoles(Arrays.asList(request.getRealmRole()));
+        Response response = connection.getInstance().realm(request.getRealmName()).users().create(user);
+        return response;
+    }
+
+    public List<GroupRepresentation> getUserGroups(String realmName, String userId) {
+        return realmService.getRealmByName(realmName).users().get(userId).groups();
+    }
+
+    public List<RoleRepresentation> getUserRoleEffective(String realmName, String userId) {
+        return realmService.getRealmByName(realmName).users().get(userId).roles().realmLevel().listEffective();
+    }
+
+    public List<RoleRepresentation> getUserRoleAvailable(String realmName, String userId) {
+        return realmService.getRealmByName(realmName).users().get(userId).roles().realmLevel().listAvailable();
+    }
+
+    public UserRepresentation getUserByUserName(String realmName, String userName) {
+        List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).users().search(userName);
+        if (!userRepresentations.isEmpty()) {
+            return userRepresentations.get(0);
+        }
+        return null;
+    }
+
+    public List<UserRepresentation> findAllUsersInGroup(String realmName, String groupName) {
+        return realmService.getRealmByName(realmName).groups().group(groupName).members();
+    }
+
+    public Collection<UserRepresentation> findUserByRole(String realmName, String roleName) {
+        RoleResource roleResource = realmService.getRealmByName(realmName).roles().get(roleName);
+        return roleResource.getRoleUserMembers();
+    }
+
+    public String addUserRole(String realmName, String userName, String userRole) {
+        RealmResource realmResource = realmService.getRealmByName(realmName);
+        UsersResource userResource = realmResource.users();
+        UserRepresentation usr = getUserByUserName(realmName, userName);
+        List<RoleRepresentation> ccc = getUserRoleAvailable(realmName, usr.getId());
+        for (RoleRepresentation r : ccc) {
+            if (r.getName().equals(userRole)) {
+                userResource.get(usr.getId()).roles().realmLevel().add(Arrays.asList(r));
+                log.info(">> Role Added ... ");
+            }
+        }
+        return "success";
+    }
+
+    public String addUserToGroup(String realmName, String userName, String groupName) {
+        UserRepresentation usr = getUserByUserName(realmName, userName);
+        List<GroupRepresentation> grouplst = realmService.getRealmGroups(realmName);
+        for (GroupRepresentation gr : grouplst) {
+            if (gr.getName().equals(groupName)) {
+                realmService.getRealmByName(realmName).users().get(usr.getId()).joinGroup(gr.getId());
+                return "success";
+            }
+        }
+        return "";
+    }
+}
