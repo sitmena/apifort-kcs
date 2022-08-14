@@ -2,12 +2,12 @@ package com.sitech.mapper;
 
 import com.sitech.dto.Dto;
 import com.sitech.dto.Dto.RealmDto;
-import com.sitech.exception.ApiFortException;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -46,13 +46,13 @@ public class DtoMapper {
     }
 
     public List<Dto.ClientDto> toClientList(List<ClientRepresentation> clientRepresentations) {
-            return clientRepresentations.stream().map(
-                    r -> Dto.ClientDto.newBuilder()
-                            .setId(r.getId())
-                            .setName(r.getName())
-                            .setEnabled(r.isEnabled())
-                            .build()
-            ).collect(Collectors.toList());
+        return clientRepresentations.stream().map(
+                r -> Dto.ClientDto.newBuilder()
+                        .setId(r.getId())
+                        .setName(r.getName())
+                        .setEnabled(r.isEnabled())
+                        .build()
+        ).collect(Collectors.toList());
     }
 
 
@@ -94,20 +94,20 @@ public class DtoMapper {
     }
 
 
-    public Dto.UserAccessTokenDto toUserAccessTokenDto(AccessTokenResponse accessTokenResponse){
+    public Dto.UserAccessTokenDto toUserAccessTokenDto(AccessTokenResponse accessTokenResponse) {
         return Dto.UserAccessTokenDto.newBuilder()
-                .setToken(accessTokenResponse.getToken())
-                .setExpiresIn(accessTokenResponse.getExpiresIn())
+                .setToken(accessTokenResponse.getToken() != null ? accessTokenResponse.getToken() : "")
+                .setExpiresIn(Objects.isNull(accessTokenResponse.getExpiresIn()) ? 0 : accessTokenResponse.getExpiresIn())
                 .setRefreshExpiresIn(accessTokenResponse.getRefreshExpiresIn())
-                .setRefreshToken(accessTokenResponse.getRefreshToken())
-                .setTokenType(accessTokenResponse.getTokenType())
-//                .setIdToken(accessTokenResponse.getIdToken())
-                .setNotBeforePolicy(accessTokenResponse.getNotBeforePolicy())
-                .setSessionState(accessTokenResponse.getSessionState())
-                .setScope(accessTokenResponse.getScope())
-//                .setError(accessTokenResponse.getError())
-//                .setErrorDescription(accessTokenResponse.getErrorDescription())
-//                .setErrorUri(accessTokenResponse.getErrorUri())
+                .setRefreshToken(Objects.isNull(accessTokenResponse.getRefreshToken()) ? "" : accessTokenResponse.getRefreshToken())
+                .setTokenType(Objects.isNull(accessTokenResponse.getTokenType()) ? "" : accessTokenResponse.getTokenType())
+                .setIdToken(Objects.isNull(accessTokenResponse.getIdToken()) ? "" : accessTokenResponse.getIdToken())
+                .setNotBeforePolicy(Objects.isNull(accessTokenResponse.getNotBeforePolicy()) ? 0 : accessTokenResponse.getNotBeforePolicy())
+                .setSessionState(Objects.isNull(accessTokenResponse.getSessionState()) ? "" : accessTokenResponse.getSessionState())
+                .setScope(Objects.isNull(accessTokenResponse.getScope()) ? "" : accessTokenResponse.getScope())
+                .setError(Objects.isNull(accessTokenResponse.getError()) ? "" : accessTokenResponse.getError())
+                .setErrorDescription(Objects.isNull(accessTokenResponse.getErrorDescription()) ? "" : accessTokenResponse.getErrorDescription())
+                .setErrorUri(Objects.isNull(accessTokenResponse.getErrorUri()) ? "" : accessTokenResponse.getErrorUri())
                 .build();
     }
 }

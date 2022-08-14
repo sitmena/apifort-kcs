@@ -47,7 +47,7 @@ public class ServerConnection {
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .username(userName) //
                 .password(userPass) //
-                .grantType(OAuth2Constants.PASSWORD)
+                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
     }
 }
