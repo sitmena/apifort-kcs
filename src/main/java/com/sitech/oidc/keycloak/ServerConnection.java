@@ -26,13 +26,28 @@ public class ServerConnection {
 
 
     public Keycloak getInstance() {
-        return KeycloakBuilder.builder()
+        Keycloak connection = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(masterRealm)
                 .clientId(adminClientId)
                 .clientSecret(adminClientSecret)
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
+
+        return connection;
     }
 
+    public Keycloak getInstanceByUser(String userName, String userPass) {
+
+        return KeycloakBuilder.builder()
+                .serverUrl(serverUrl)
+                .realm(masterRealm)
+                .clientId(adminClientId)
+                .clientSecret(adminClientSecret)
+                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                .username(userName) //
+                .password(userPass) //
+                .grantType(OAuth2Constants.PASSWORD)
+                .build();
+    }
 }

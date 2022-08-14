@@ -2,6 +2,8 @@ package com.sitech.mapper;
 
 import com.sitech.dto.Dto;
 import com.sitech.dto.Dto.RealmDto;
+import com.sitech.exception.ApiFortException;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.*;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -44,14 +46,15 @@ public class DtoMapper {
     }
 
     public List<Dto.ClientDto> toClientList(List<ClientRepresentation> clientRepresentations) {
-        return clientRepresentations.stream().map(
-                r -> Dto.ClientDto.newBuilder()
-                        .setId(r.getId())
-                        .setName(r.getName())
-                        .setEnabled(r.isEnabled())
-                        .build()
-        ).collect(Collectors.toList());
+            return clientRepresentations.stream().map(
+                    r -> Dto.ClientDto.newBuilder()
+                            .setId(r.getId())
+                            .setName(r.getName())
+                            .setEnabled(r.isEnabled())
+                            .build()
+            ).collect(Collectors.toList());
     }
+
 
     public List<Dto.RoleDto> toRoleList(List<RoleRepresentation> roleRepresentations) {
         return roleRepresentations.stream().map(
@@ -88,5 +91,23 @@ public class DtoMapper {
                 .setFirstName(result.getFirstName())
                 .setLastName(result.getLastName())
                 .setEmail(result.getEmail()).build();
+    }
+
+
+    public Dto.UserAccessTokenDto toUserAccessTokenDto(AccessTokenResponse accessTokenResponse){
+        return Dto.UserAccessTokenDto.newBuilder()
+                .setToken(accessTokenResponse.getToken())
+                .setExpiresIn(accessTokenResponse.getExpiresIn())
+                .setRefreshExpiresIn(accessTokenResponse.getRefreshExpiresIn())
+                .setRefreshToken(accessTokenResponse.getRefreshToken())
+                .setTokenType(accessTokenResponse.getTokenType())
+//                .setIdToken(accessTokenResponse.getIdToken())
+                .setNotBeforePolicy(accessTokenResponse.getNotBeforePolicy())
+                .setSessionState(accessTokenResponse.getSessionState())
+                .setScope(accessTokenResponse.getScope())
+//                .setError(accessTokenResponse.getError())
+//                .setErrorDescription(accessTokenResponse.getErrorDescription())
+//                .setErrorUri(accessTokenResponse.getErrorUri())
+                .build();
     }
 }

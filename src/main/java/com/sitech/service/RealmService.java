@@ -1,5 +1,6 @@
 package com.sitech.service;
 
+import com.sitech.exception.ApiFortException;
 import com.sitech.oidc.keycloak.ServerConnection;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.*;
@@ -54,8 +55,27 @@ public class RealmService {
         return connection.getInstance().realm(realmName).groups().group(groupName).toRepresentation();
     }
 
+
+//    @SneakyThrows
     public List<ClientRepresentation> getRealmClients(String realmName) {
-        return connection.getInstance().realm(realmName).clients().findAll();
+//        return connection.getInstance().realm(realmName).clients().findAll();
+        List<ClientRepresentation> lst = connection.getInstance().realm(realmName).clients().findAll();
+
+
+//
+//
+////        try {
+            if(!lst.isEmpty()) {
+                log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    throw new ApiFortException("No Client Found");
+            }
+            else{
+                return lst;
+            }
+//            } catch (ApiFortException e) {
+//                e.printStackTrace();
+//            }
+//        return lst;
     }
 
     public List<RoleRepresentation> getRealmRoles(String realmName) {
