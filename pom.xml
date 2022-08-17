@@ -7,18 +7,20 @@
   <version>1.0.0-SNAPSHOT</version>
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
-    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
     <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-    <quarkus.platform.version>2.11.1.Final</quarkus.platform.version>
+<!--    <quarkus.platform.version>2.11.1.Final</quarkus.platform.version>-->
+<!--    <quarkus.platform.version>2.10.3.Final</quarkus.platform.version>-->
+    <quarkus.platform.version>2.11.2.Final</quarkus.platform.version>
     <skipITs>true</skipITs>
     <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
-    <quarkus.package.type>uber-jar</quarkus.package.type>
+<!--    <quarkus.package.type>uber-jar</quarkus.package.type>-->
 
-    <grpc.version>{grpc-version}</grpc.version>
-    <protoc.version>{protoc-version}</protoc.version>
+    <grpc.version>1.48.1</grpc.version>
+    <protoc.version>3.21.5</protoc.version>
 
   </properties>
   <dependencyManagement>
@@ -105,6 +107,44 @@
         </executions>
       </plugin>
 
+
+<!--      <plugin>-->
+<!--        <groupId>org.xolstice.maven.plugins</groupId>-->
+<!--        <artifactId>protobuf-maven-plugin</artifactId>-->
+<!--        <version>0.6.1</version>-->
+<!--        <configuration>-->
+<!--          <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>-->
+<!--          <pluginId>grpc-java</pluginId>-->
+<!--          <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>-->
+<!--          <protocPlugins>-->
+<!--            <protocPlugin>-->
+<!--              <id>quarkus-grpc-protoc-plugin</id>-->
+<!--              <groupId>io.quarkus</groupId>-->
+<!--              <artifactId>quarkus-grpc-protoc-plugin</artifactId>-->
+<!--              <version>2.11.2.Final</version>-->
+<!--              <mainClass>io.quarkus.grpc.protoc.plugin.MutinyGrpcGenerator</mainClass>-->
+<!--            </protocPlugin>-->
+<!--          </protocPlugins>-->
+<!--        </configuration>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>compile</id>-->
+<!--            <goals>-->
+<!--              <goal>compile</goal>-->
+<!--              <goal>compile-custom</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--          <execution>-->
+<!--            <id>test-compile</id>-->
+<!--            <goals>-->
+<!--              <goal>test-compile</goal>-->
+<!--              <goal>test-compile-custom</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
+
+      <!-- ... -->
 
       <plugin>
         <groupId>com.github.spotbugs</groupId>
