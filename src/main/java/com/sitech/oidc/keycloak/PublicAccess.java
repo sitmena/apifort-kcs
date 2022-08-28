@@ -3,6 +3,7 @@ package com.sitech.oidc.keycloak;
 import org.keycloak.representations.idm.KeysMetadataRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;

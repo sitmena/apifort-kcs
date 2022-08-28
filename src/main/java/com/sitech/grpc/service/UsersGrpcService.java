@@ -2,10 +2,7 @@ package com.sitech.grpc.service;
 
 import com.sitech.mapper.DtoMapper;
 import com.sitech.service.UserService;
-import com.sitech.users.AddUserRequest;
-import com.sitech.users.GetUserByUserNameRequest;
-import com.sitech.users.GetUserGroupsResponse;
-import com.sitech.users.UserResponse;
+import com.sitech.users.*;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import org.keycloak.representations.idm.GroupRepresentation;
@@ -13,18 +10,11 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import com.sitech.users.GetUserRoleResponse;
-import com.sitech.users.UsersResponse;
-import com.sitech.users.StatusReplay;
-import com.sitech.users.FindUserRoleRequest;
-import com.sitech.users.GetUserGroupRequest;
-import com.sitech.users.UserRoleRequest;
-import com.sitech.users.UserGroupRequest;
-import com.sitech.users.AddUserGroupRequest;
 
 @GrpcService
 public class UsersGrpcService implements com.sitech.users.UserService {
@@ -42,8 +32,20 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     }
 
     @Override
+    public Uni<UserResponse> getUserById(GetUserByUserNameRequest request) {
+        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(),request.getUserId());
+        return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
+    }
+
+    @Override
     public Uni<UserResponse> getUserByUserName(GetUserByUserNameRequest request) {
-        UserRepresentation result = userService.getUserByUserName(request.getRealmName(),request.getUserName());
+        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(),request.getUserName());
+        return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
+    }
+
+    @Override
+    public Uni<UserResponse> getUserByEmail(GetUserByUserNameRequest request) {
+        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(),request.getUserEmail());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
 

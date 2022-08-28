@@ -2,7 +2,6 @@ package com.sitech.service;
 
 import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.users.AddUserRequest;
-import io.quarkus.runtime.annotations.RegisterForReflection;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleResource;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -21,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 
 @ApplicationScoped
-//@RegisterForReflection
 public class UserService {
 
     @Inject
@@ -32,8 +30,8 @@ public class UserService {
 
 //    void onStart(@Observes StartupEvent ev) {
 //        log.info("The application is starting...");
-//        addUserRole("ajweh","ajweh","uma_authorization");
 //    }
+
 
     public Response addUser(AddUserRequest request) {
         CredentialRepresentation credential = new CredentialRepresentation();
@@ -63,13 +61,14 @@ public class UserService {
         return realmService.getRealmByName(realmName).users().get(userId).roles().realmLevel().listAvailable();
     }
 
-    public UserRepresentation getUserByUserName(String realmName, String userName) {
-        List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).users().search(userName);
+    public UserRepresentation getUserByAttributes(String realmName, String attribute) {
+        List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).users().searchByAttributes(attribute);
         if (!userRepresentations.isEmpty()) {
             return userRepresentations.get(0);
         }
         return null;
     }
+
 
     public List<UserRepresentation> findAllUsersInGroup(String realmName, String groupName) {
         return realmService.getRealmByName(realmName).groups().group(groupName).members();
@@ -83,7 +82,7 @@ public class UserService {
     public String addUserRole(String realmName, String userName, String userRole) {
         RealmResource realmResource = realmService.getRealmByName(realmName);
         UsersResource userResource = realmResource.users();
-        UserRepresentation usr = getUserByUserName(realmName, userName);
+        UserRepresentation usr = getUserByAttributes(realmName, userName);
         List<RoleRepresentation> ccc = getUserRoleAvailable(realmName, usr.getId());
         for (RoleRepresentation r : ccc) {
             if (r.getName().equals(userRole)) {
@@ -95,7 +94,7 @@ public class UserService {
     }
 
     public String addUserToGroup(String realmName, String userName, String groupName) {
-        UserRepresentation usr = getUserByUserName(realmName, userName);
+        UserRepresentation usr = getUserByAttributes(realmName, userName);
         List<GroupRepresentation> grouplst = realmService.getRealmGroups(realmName);
         for (GroupRepresentation gr : grouplst) {
             if (gr.getName().equals(groupName)) {

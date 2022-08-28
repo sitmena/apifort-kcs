@@ -6,6 +6,7 @@ import com.sitech.token.UserAccessTokenRequest;
 import com.sitech.token.UserAccessTokenResponse;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
+
 import javax.inject.Inject;
 
 @GrpcService

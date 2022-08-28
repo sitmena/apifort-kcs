@@ -2,7 +2,6 @@ package com.sitech.grpc.service;
 
 import com.google.protobuf.Empty;
 import com.sitech.dto.Dto;
-import com.sitech.exception.ApiFortException;
 import com.sitech.mapper.DtoMapper;
 import com.sitech.realm.AddRealmRequest;
 import com.sitech.realm.RealmNameRequest;
@@ -14,6 +13,7 @@ import io.smallrye.mutiny.Uni;
 import org.keycloak.representations.idm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import java.util.List;
 

@@ -3,21 +3,15 @@ package com.sitech;
 
 import com.google.protobuf.Empty;
 import com.sitech.dto.Dto;
-import io.grpc.stub.StreamObserver;
+import com.sitech.realm.RealmService;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusTest;
-import com.sitech.realm.RealmService;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.subscription.Cancellable;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
 public class RealmGrpcServiceTest {
