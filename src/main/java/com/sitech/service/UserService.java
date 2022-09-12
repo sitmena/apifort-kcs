@@ -69,7 +69,6 @@ public class UserService {
         return null;
     }
 
-
     public List<UserRepresentation> findAllUsersInGroup(String realmName, String groupName) {
         return realmService.getRealmByName(realmName).groups().group(groupName).members();
     }

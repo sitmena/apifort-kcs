@@ -61,22 +61,12 @@ public class RealmService {
     public List<ClientRepresentation> getRealmClients(String realmName) {
 //        return connection.getInstance().realm(realmName).clients().findAll();
         List<ClientRepresentation> lst = connection.getInstance().realm(realmName).clients().findAll();
-
-
-//
-//
-////        try {
-            if(!lst.isEmpty()) {
-                log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                    throw new ApiFortException("No Client Found");
+            if(lst.isEmpty()) {
+               throw new ApiFortException("No Client Found");
             }
             else{
                 return lst;
             }
-//            } catch (ApiFortException e) {
-//                e.printStackTrace();
-//            }
-//        return lst;
     }
 
     public List<RoleRepresentation> getRealmRoles(String realmName) {
