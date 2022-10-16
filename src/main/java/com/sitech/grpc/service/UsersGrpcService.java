@@ -93,4 +93,10 @@ public class UsersGrpcService implements com.sitech.users.UserService {
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
     }
 
+    @Override
+    public Uni<UserResponse> updateUser(UpdateUserRequest updateUserRequest) {
+        UserRepresentation response = userService.updateUser(updateUserRequest);
+        return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(response)).build());
+    }
+
 }

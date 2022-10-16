@@ -34,6 +34,7 @@ public class ServerConnection {
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
 
+        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  {} -- {} -- {} -- {} -- {}" , serverUrl , masterRealm , adminClientId , adminClientSecret ,OAuth2Constants.CLIENT_CREDENTIALS );
         return connection;
     }
 

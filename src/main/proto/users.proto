@@ -28,6 +28,8 @@ service UserService {
 
   rpc AddUserRole(AddUserRoleRequest) returns(StatusReplay) {};
 
+  rpc updateUser(UpdateUserRequest) returns (UserResponse) {};
+
 }
 
 message GetUserByUserNameRequest{
@@ -62,6 +64,16 @@ message AddUserRequest {
   string email = 5;
   string realmName = 6;
   string realmRole = 7;
+}
+
+message UpdateUserRequest {
+  string realmName = 1;
+  string userId = 2;
+  string userName = 3;
+  string firstName = 4;
+  string lastName = 5;
+  string email = 6;
+  bool enabled = 7;
 }
 
 message UserGroupRequest{

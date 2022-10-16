@@ -2,8 +2,10 @@ package com.sitech.service;
 
 import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.users.AddUserRequest;
+import com.sitech.users.UpdateUserRequest;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
@@ -102,5 +104,19 @@ public class UserService {
             }
         }
         return "";
+    }
+
+
+    public UserRepresentation updateUser(UpdateUserRequest updateUserRequest) {
+        log.info("^^^^^^^^^^^^ Start Update User Id = {} ", updateUserRequest.getUserId());
+        UserResource userResource = connection.getInstance().realm(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId());
+        UserRepresentation userRepresentation = userResource.toRepresentation();
+        userRepresentation.setUsername(updateUserRequest.getUserName());
+        userRepresentation.setEmail(updateUserRequest.getEmail());
+        userRepresentation.setFirstName(updateUserRequest.getFirstName());
+        userRepresentation.setLastName(updateUserRequest.getLastName());
+        userRepresentation.setEnabled(updateUserRequest.getEnabled());
+        userResource.update(userRepresentation);
+        return realmService.getRealmByName(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId()).toRepresentation();
     }
 }
