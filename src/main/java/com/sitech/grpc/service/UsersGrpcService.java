@@ -99,4 +99,10 @@ public class UsersGrpcService implements com.sitech.users.UserService {
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(response)).build());
     }
 
+    @Override
+    public Uni<StatusReplay> updateUserPassword(UpdateUserPasswordRequest request) {
+        String status = userService.updateUserService(request);
+        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
+    }
+
 }

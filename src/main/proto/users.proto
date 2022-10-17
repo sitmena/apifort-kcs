@@ -30,6 +30,14 @@ service UserService {
 
   rpc updateUser(UpdateUserRequest) returns (UserResponse) {};
 
+  rpc updateUserPassword(UpdateUserPasswordRequest) returns (StatusReplay) {};
+
+}
+
+message UpdateUserPasswordRequest{
+  string realmName = 1;
+  string userId = 2;
+  string password = 3;
 }
 
 message GetUserByUserNameRequest{
