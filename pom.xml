@@ -96,28 +96,6 @@
       <artifactId>quarkus-smallrye-health</artifactId>
     </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>com.github.dasniko</groupId>-->
-<!--      <artifactId>testcontainers-keycloak</artifactId>-->
-<!--      <version>2.3.0</version>-->
-<!--      <scope>test</scope>-->
-<!--    </dependency>-->
-
-<!--    <dependency>-->
-<!--      <groupId>io.quarkus</groupId>-->
-<!--      <artifactId>quarkus-oidc</artifactId>-->
-<!--    </dependency>-->
-
-<!--    <dependency>-->
-<!--      <groupId>io.quarkus</groupId>-->
-<!--      <artifactId>quarkus-keycloak-authorization</artifactId>-->
-<!--    </dependency>-->
-
-<!--    <dependency>-->
-<!--      <groupId>io.quarkus</groupId>-->
-<!--      <artifactId>quarkus-resteasy</artifactId>-->
-<!--    </dependency>-->
-
   </dependencies>
 
   <build>
