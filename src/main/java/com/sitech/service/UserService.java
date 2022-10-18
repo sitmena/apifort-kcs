@@ -5,10 +5,7 @@ import com.sitech.users.AddUserRequest;
 import com.sitech.users.StatusReplay;
 import com.sitech.users.UpdateUserPasswordRequest;
 import com.sitech.users.UpdateUserRequest;
-import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.RoleResource;
-import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -73,7 +70,20 @@ public class UserService {
         return null;
     }
 
+    public UserRepresentation getUserById(String realmName, String userId) {
+        UserResource userRepresentations = realmService.getRealmByName(realmName).users().get(userId);
+        return userRepresentations.toRepresentation();
+    }
+
     public List<UserRepresentation> findAllUsersInGroup(String realmName, String groupName) {
+       GroupsResource groupsResource = realmService.getRealmByName(realmName).groups();
+       log.info("__________________ {} ",groupsResource.groups().size());
+       GroupResource groupResource =  groupsResource.group(groupName);
+        List<UserRepresentation> members = groupResource.members();
+        log.info("______+++++++++____________ {} ",members.size());
+//       for(GroupsResource group : groupRepresentations){
+////           group.
+//       }
         return realmService.getRealmByName(realmName).groups().group(groupName).members();
     }
 
@@ -110,7 +120,7 @@ public class UserService {
 
 
     public UserRepresentation updateUser(UpdateUserRequest updateUserRequest) {
-        log.info("^^^^^^^^^^^^ Start Update User Id = {} ", updateUserRequest.getUserId());
+        log.info("^^^^^^^^^^^^ Start Update User Id = {} **** realm = {} ", updateUserRequest.getUserId() , updateUserRequest.getRealmName());
         UserResource userResource = connection.getInstance().realm(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId());
         UserRepresentation userRepresentation = userResource.toRepresentation();
         userRepresentation.setUsername(updateUserRequest.getUserName());
