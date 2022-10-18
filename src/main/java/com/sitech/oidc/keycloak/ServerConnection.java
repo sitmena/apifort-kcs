@@ -33,7 +33,6 @@ public class ServerConnection {
                 .clientSecret(adminClientSecret)
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
-
         return connection;
     }
 

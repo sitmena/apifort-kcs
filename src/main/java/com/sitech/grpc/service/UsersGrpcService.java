@@ -33,7 +33,9 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> getUserById(GetUserByUserNameRequest request) {
-        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(),request.getUserId());
+//        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(),request.getUserId());
+        //
+        UserRepresentation result = userService.getUserById(request.getRealmName(),request.getUserId());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
 
@@ -69,6 +71,8 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UsersResponse> findAllUsersInGroup(UserGroupRequest request) {
+
+        log.info("__________________ {} == {} " ,request.getRealmName() , request.getGroupName());
         List<UserRepresentation> userRepresentations = userService.findAllUsersInGroup(request.getRealmName(),request.getGroupName());
         return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(userRepresentations)).build());
     }
@@ -90,6 +94,18 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     @Override
     public Uni<com.sitech.users.StatusReplay> addUserRole(com.sitech.users.AddUserRoleRequest request) {
         String status = userService.addUserRole(request.getRealmName(),request.getUserName(), request.getRoleName());
+        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
+    }
+
+    @Override
+    public Uni<UserResponse> updateUser(UpdateUserRequest updateUserRequest) {
+        UserRepresentation response = userService.updateUser(updateUserRequest);
+        return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(response)).build());
+    }
+
+    @Override
+    public Uni<StatusReplay> updateUserPassword(UpdateUserPasswordRequest request) {
+        String status = userService.updateUserService(request);
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
     }
 
