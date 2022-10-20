@@ -5,6 +5,7 @@ import com.sitech.users.AddUserRequest;
 import com.sitech.users.StatusReplay;
 import com.sitech.users.UpdateUserPasswordRequest;
 import com.sitech.users.UpdateUserRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
@@ -35,6 +36,7 @@ public class UserService {
 
 
     public Response addUser(AddUserRequest request) {
+
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
         credential.setValue(request.getPass());
@@ -45,9 +47,25 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setCredentials(Arrays.asList(credential));
         user.setEnabled(true);
-        user.setRealmRoles(Arrays.asList(request.getRealmRole()));
         Response response = connection.getInstance().realm(request.getRealmName()).users().create(user);
+        if(StringUtils.isNoneEmpty(request.getRealmRole())) {
+            assignRoleToUser(request.getRealmName(), request.getUserName(), request.getRealmRole());
+        }
         return response;
+    }
+
+    private void assignRoleToUser(String realmName , String userName ,String realmRole) {
+        List<String> roleLst = Arrays.stream(realmRole.split(",")).toList();
+        for(String role : roleLst) {
+            RoleRepresentation testerRealmRole = connection.getInstance().realm(realmName).roles().get(role).toRepresentation();
+            List<UserRepresentation> userRepresentations = connection.getInstance().realm(realmName).users().list();
+            for (UserRepresentation user : userRepresentations) {
+                if (user.getUsername().equals(userName)) {
+                    UserResource userResource1 = connection.getInstance().realm(realmName).users().get(user.getId());
+                    userResource1.roles().realmLevel().add(Arrays.asList(testerRealmRole));
+                }
+            }
+        }
     }
 
     public List<GroupRepresentation> getUserGroups(String realmName, String userId) {
@@ -65,7 +83,11 @@ public class UserService {
     public UserRepresentation getUserByAttributes(String realmName, String attribute) {
         List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).users().searchByAttributes(attribute);
         if (!userRepresentations.isEmpty()) {
-            return userRepresentations.get(0);
+            for (UserRepresentation usr : userRepresentations){
+                if (usr.getUsername().equals(attribute)){
+                    return usr;
+                }
+            }
         }
         return null;
     }
@@ -96,10 +118,10 @@ public class UserService {
         RealmResource realmResource = realmService.getRealmByName(realmName);
         UsersResource userResource = realmResource.users();
         UserRepresentation usr = getUserByAttributes(realmName, userName);
-        List<RoleRepresentation> ccc = getUserRoleAvailable(realmName, usr.getId());
-        for (RoleRepresentation r : ccc) {
-            if (r.getName().equals(userRole)) {
-                userResource.get(usr.getId()).roles().realmLevel().add(Arrays.asList(r));
+        List<RoleRepresentation> roleRepresentations = getUserRoleAvailable(realmName, usr.getId());
+        for (RoleRepresentation roleRepresentation : roleRepresentations) {
+            if (roleRepresentation.getName().equals(userRole)) {
+                userResource.get(usr.getId()).roles().realmLevel().add(Arrays.asList(roleRepresentation));
                 log.info(">> Role Added ... ");
             }
         }

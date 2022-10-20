@@ -71,8 +71,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UsersResponse> findAllUsersInGroup(UserGroupRequest request) {
-
-        log.info("__________________ {} == {} " ,request.getRealmName() , request.getGroupName());
         List<UserRepresentation> userRepresentations = userService.findAllUsersInGroup(request.getRealmName(),request.getGroupName());
         return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(userRepresentations)).build());
     }
@@ -88,7 +86,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
         Collection<UserRepresentation> userRepresentations = userService.findUserByRole(request.getRealmName(),request.getRoleName());
         List newUserRepresentations = new ArrayList(userRepresentations);
         return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(newUserRepresentations)).build());
-
     }
 
     @Override
