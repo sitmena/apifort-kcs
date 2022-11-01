@@ -8,7 +8,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class PublicAccessService {
+public class KeysService {
 
     private static final Logger log = LoggerFactory.getLogger(RealmService.class);
 

@@ -25,6 +25,8 @@ service RealmService {
   rpc GetRealmClients(RealmNameRequest) returns (GetRealmClientsResponse) {};
 
   rpc GetRealmRoles(RealmNameRequest) returns (GetRealmRolesResponse) {};
+
+
 }
 
 message RealmRequest {

@@ -33,8 +33,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> getUserById(GetUserByUserNameRequest request) {
-//        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(),request.getUserId());
-        //
         UserRepresentation result = userService.getUserById(request.getRealmName(),request.getUserId());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
@@ -71,8 +69,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UsersResponse> findAllUsersInGroup(UserGroupRequest request) {
-
-        log.info("__________________ {} == {} " ,request.getRealmName() , request.getGroupName());
         List<UserRepresentation> userRepresentations = userService.findAllUsersInGroup(request.getRealmName(),request.getGroupName());
         return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(userRepresentations)).build());
     }
@@ -88,7 +84,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
         Collection<UserRepresentation> userRepresentations = userService.findUserByRole(request.getRealmName(),request.getRoleName());
         List newUserRepresentations = new ArrayList(userRepresentations);
         return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(newUserRepresentations)).build());
-
     }
 
     @Override
@@ -105,8 +100,21 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<StatusReplay> updateUserPassword(UpdateUserPasswordRequest request) {
-        String status = userService.updateUserService(request);
+        String status = userService.updateUserPassword(request);
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
+    }
+
+    @Override
+    public Uni<UsersResponse> findAllUsersInRealm(GetUsersRequest request) {
+        List<UserRepresentation> userRepresentations = userService.getAllUsersByRealm(request);
+        List newUserRepresentations = new ArrayList(userRepresentations);
+        return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(newUserRepresentations)).build());
+    }
+
+    @Override
+    public Uni<UserResponse> updateUserAttributes(updateUserAttributesRequest request) {
+        UserRepresentation response = userService.updateUserAttributes(request);
+        return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(response)).build());
     }
 
 }

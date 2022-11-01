@@ -2,7 +2,7 @@ package com.sitech.grpc.service;
 
 import com.sitech.access.PublicKeyReplay;
 import com.sitech.access.PublicKeyRequest;
-import com.sitech.service.PublicAccessService;
+import com.sitech.service.KeysService;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ public class PublicAccessGrpcService implements com.sitech.access.PublicAccessSe
 
     private static final Logger log = LoggerFactory.getLogger(PublicAccessGrpcService.class);
     @Inject
-    PublicAccessService keysService;
+    KeysService keysService;
 
     @Override
     public Uni<PublicKeyReplay> getPublicKey(PublicKeyRequest request) {
