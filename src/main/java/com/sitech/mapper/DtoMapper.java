@@ -97,6 +97,8 @@ public class DtoMapper {
                 .setEmail(result.getEmail())
                 .setRole(ObjectUtils.isEmpty(result.getRealmRoles()) ? "" : String.join(",", result.getRealmRoles()))
                 .setGroup(ObjectUtils.isEmpty(result.getGroups()) ? "" : String.join(",", result.getGroups()))
+//                .setRole(String.join(",", result.getRealmRoles()))
+//                .setGroup(String.join(",", result.getGroups()))
                 .putAllAttributes(attributeConverter(result.getAttributes()))
                 .build();
     }
