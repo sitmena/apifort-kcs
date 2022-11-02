@@ -2,12 +2,12 @@ package com.sitech.mapper;
 
 import com.sitech.dto.Dto;
 import com.sitech.dto.Dto.RealmDto;
+import org.apache.commons.lang3.ObjectUtils;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.*;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -15,53 +15,57 @@ public class DtoMapper {
 
     public List<RealmDto> toRealmList(List<RealmRepresentation> realmRepresentations) {
         return realmRepresentations.stream().map(
-                r -> Dto.RealmDto.newBuilder()
-                        .setId(r.getId())
-                        .setRealm(r.getRealm())
-                        .setDisplayName(r.getDisplayName())
-                        .setEnabled(r.isEnabled()).build()
+                result -> Dto.RealmDto.newBuilder()
+                        .setId(result.getId())
+                        .setRealm(result.getRealm())
+                        .setDisplayName(result.getDisplayName())
+                        .setEnabled(result.isEnabled()).build()
         ).collect(Collectors.toList());
     }
 
     public List<Dto.UserDto> toUserList(List<UserRepresentation> userRepresentations) {
         return userRepresentations.stream().map(
-                r -> Dto.UserDto.newBuilder()
-                        .setId(r.getId())
-                        .setCreatedTimestamp(r.getCreatedTimestamp())
-                        .setUsername(r.getUsername())
-                        .setEnabled(r.isEnabled())
-                        .setFirstName(r.getFirstName())
-                        .setLastName(r.getLastName())
-                        .setEmail(r.getEmail()).build()
+                result -> Dto.UserDto.newBuilder()
+                        .setId(result.getId())
+                        .setCreatedTimestamp(result.getCreatedTimestamp())
+                        .setUsername(result.getUsername())
+                        .setEnabled(result.isEnabled())
+                        .setFirstName(result.getFirstName())
+                        .setLastName(result.getLastName())
+                        .setEmail(result.getEmail())
+                        .setRole(ObjectUtils.isEmpty(result.getRealmRoles()) ? "" : String.join(",", result.getRealmRoles()))
+                        .setGroup(ObjectUtils.isEmpty(result.getGroups()) ? "" : String.join(",", result.getGroups()))
+                        .putAllAttributes(attributeConverter(result.getAttributes()))
+                        .build()
+
         ).collect(Collectors.toList());
     }
 
     public List<Dto.GroupDto> toGroupList(List<GroupRepresentation> groupRepresentations) {
         return groupRepresentations.stream().map(
-                r -> Dto.GroupDto.newBuilder()
-                        .setId(r.getId())
-                        .setName(r.getName())
+                result -> Dto.GroupDto.newBuilder()
+                        .setId(result.getId())
+                        .setName(result.getName())
                         .build()
         ).collect(Collectors.toList());
     }
 
     public List<Dto.ClientDto> toClientList(List<ClientRepresentation> clientRepresentations) {
         return clientRepresentations.stream().map(
-                r -> Dto.ClientDto.newBuilder()
-                        .setId(r.getId())
-                        .setName(r.getName())
-                        .setEnabled(r.isEnabled())
+                result -> Dto.ClientDto.newBuilder()
+                        .setId(result.getId())
+                        .setName(result.getName())
+                        .setEnabled(result.isEnabled())
                         .build()
         ).collect(Collectors.toList());
     }
 
-
     public List<Dto.RoleDto> toRoleList(List<RoleRepresentation> roleRepresentations) {
         return roleRepresentations.stream().map(
-                r -> Dto.RoleDto.newBuilder()
-                        .setId(r.getId())
-                        .setName(r.getName())
-                        .setDescription(r.getDescription())
+                result -> Dto.RoleDto.newBuilder()
+                        .setId(result.getId())
+                        .setName(result.getName())
+                        .setDescription(result.getDescription())
                         .build()
         ).collect(Collectors.toList());
     }
@@ -90,7 +94,22 @@ public class DtoMapper {
                 .setEnabled(result.isEnabled())
                 .setFirstName(result.getFirstName())
                 .setLastName(result.getLastName())
-                .setEmail(result.getEmail()).build();
+                .setEmail(result.getEmail())
+                .setRole(ObjectUtils.isEmpty(result.getRealmRoles()) ? "" : String.join(",", result.getRealmRoles()))
+                .setGroup(ObjectUtils.isEmpty(result.getGroups()) ? "" : String.join(",", result.getGroups()))
+                .putAllAttributes(attributeConverter(result.getAttributes()))
+                .build();
+    }
+
+    private Map<String, String> attributeConverter(Map<String, List<String>> attributes) {
+        Map<String, String> att = new HashMap<String, String>();
+        if (!Objects.isNull(attributes) && !attributes.isEmpty()) {
+            for (var entry : attributes.entrySet()) {
+                String value = String.join(",", entry.getValue());
+                att.put(entry.getKey(), value);
+            }
+        }
+        return att;
     }
 
 

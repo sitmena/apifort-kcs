@@ -2,6 +2,7 @@ package com.sitech.service;
 
 import com.sitech.exception.ApiFortException;
 import com.sitech.oidc.keycloak.ServerConnection;
+import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.*;
 import org.slf4j.Logger;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import java.util.List;
 
 @ApplicationScoped
@@ -24,7 +26,7 @@ public class RealmService {
         return connection.getInstance().realms().findAll();
     }
 
-    public void createRealm(String realmName , String displayName) {
+    public void createRealm(String realmName, String displayName) {
         RealmRepresentation realmRepresentation = new RealmRepresentation();
         realmRepresentation.setId(realmName);
         realmRepresentation.setRealm(realmName);
@@ -41,7 +43,6 @@ public class RealmService {
         GroupRepresentation groupRepresentation = new GroupRepresentation();
         groupRepresentation.setName(request.getGroupName());
         return connection.getInstance().realm(request.getRealmName()).groups().add(groupRepresentation).getStatus();
-
     }
 
     public List<UserRepresentation> getRealmUsers(String realmName) {
@@ -52,21 +53,27 @@ public class RealmService {
         return connection.getInstance().realm(realmName).groups().groups();
     }
 
-    public GroupRepresentation getRealmGroupByName(String realmName , String groupName) {
-        return connection.getInstance().realm(realmName).groups().group(groupName).toRepresentation();
+    public GroupRepresentation getRealmGroupByName(String realmName, String groupName) {
+//        return connection.getInstance().realm(realmName).groups().group(groupName).toRepresentation();
+        List<GroupRepresentation> groups = connection.getInstance().realm(realmName).groups().groups();
+        return groups.stream()
+                .filter(x -> groupName.equals(x.getName()))
+                .findAny()
+                .orElseThrow(() -> new BadRequestException("No Group Found"));
+
+
     }
 
 
-//    @SneakyThrows
+    //    @SneakyThrows
     public List<ClientRepresentation> getRealmClients(String realmName) {
 //        return connection.getInstance().realm(realmName).clients().findAll();
         List<ClientRepresentation> lst = connection.getInstance().realm(realmName).clients().findAll();
-            if(lst.isEmpty()) {
-               throw new ApiFortException("No Client Found");
-            }
-            else{
-                return lst;
-            }
+        if (lst.isEmpty()) {
+            throw new ApiFortException("No Client Found");
+        } else {
+            return lst;
+        }
     }
 
     public List<RoleRepresentation> getRealmRoles(String realmName) {

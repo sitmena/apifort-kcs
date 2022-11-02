@@ -1,6 +1,7 @@
 package com.sitech.oidc.keycloak;
 
 import com.sitech.util.ServiceConstants;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
+@Slf4j
 public class ServerConnection {
 
     private static final Logger log = LoggerFactory.getLogger(ServerConnection.class);
@@ -26,6 +28,7 @@ public class ServerConnection {
 
 
     public Keycloak getInstance() {
+        log.info(">>>>>>>>>>>>>> Requested URL : {}" , serverUrl);
         Keycloak connection = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(masterRealm)
