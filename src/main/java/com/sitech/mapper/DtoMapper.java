@@ -18,7 +18,7 @@ public class DtoMapper {
                 result -> Dto.RealmDto.newBuilder()
                         .setId(result.getId())
                         .setRealm(result.getRealm())
-                        .setDisplayName(result.getDisplayName())
+                        .setDisplayName(ObjectUtils.isEmpty(result.getDisplayName()) ? "" : result.getDisplayName())
                         .setEnabled(result.isEnabled()).build()
         ).collect(Collectors.toList());
     }
@@ -28,11 +28,11 @@ public class DtoMapper {
                 result -> Dto.UserDto.newBuilder()
                         .setId(result.getId())
                         .setCreatedTimestamp(result.getCreatedTimestamp())
-                        .setUsername(result.getUsername())
-                        .setEnabled(result.isEnabled())
-                        .setFirstName(result.getFirstName())
-                        .setLastName(result.getLastName())
-                        .setEmail(result.getEmail())
+                        .setUsername(ObjectUtils.isEmpty(result.getUsername()) ? "" : result.getUsername())
+                        .setEnabled(ObjectUtils.isEmpty(result.isEnabled()) ? false : result.isEnabled())
+                        .setFirstName(ObjectUtils.isEmpty(result.getFirstName())  ? "" : result.getFirstName())
+                        .setLastName(ObjectUtils.isEmpty(result.getLastName()) ? "" : result.getLastName())
+                        .setEmail(ObjectUtils.isEmpty(result.getEmail()) ? "" : result.getEmail())
                         .setRole(ObjectUtils.isEmpty(result.getRealmRoles()) ? "" : String.join(",", result.getRealmRoles()))
                         .setGroup(ObjectUtils.isEmpty(result.getGroups()) ? "" : String.join(",", result.getGroups()))
                         .putAllAttributes(attributeConverter(result.getAttributes()))
@@ -65,7 +65,7 @@ public class DtoMapper {
                 result -> Dto.RoleDto.newBuilder()
                         .setId(result.getId())
                         .setName(result.getName())
-                        .setDescription(result.getDescription())
+                        .setDescription(ObjectUtils.isEmpty(result.getDescription()) ? "" : result.getDescription())
                         .build()
         ).collect(Collectors.toList());
     }
@@ -80,7 +80,7 @@ public class DtoMapper {
     public RealmDto toRealmDto(RealmRepresentation realmRepresentation) {
         RealmDto realmDto = RealmDto.newBuilder().setId(realmRepresentation.getId())
                 .setRealm(realmRepresentation.getRealm())
-                .setDisplayName(realmRepresentation.getDisplayName())
+                .setDisplayName(ObjectUtils.isEmpty(realmRepresentation.getDisplayName()) ? "" : realmRepresentation.getDisplayName())
                 .setEnabled(realmRepresentation.isEnabled()).build();
         return realmDto;
     }
@@ -90,13 +90,15 @@ public class DtoMapper {
         return Dto.UserDto.newBuilder()
                 .setId(result.getId())
                 .setCreatedTimestamp(result.getCreatedTimestamp())
-                .setUsername(result.getUsername())
-                .setEnabled(result.isEnabled())
-                .setFirstName(result.getFirstName())
-                .setLastName(result.getLastName())
-                .setEmail(result.getEmail())
+                .setUsername(ObjectUtils.isEmpty(result.getUsername()) ? "" : result.getUsername())
+                .setEnabled(ObjectUtils.isEmpty(result.isEnabled().toString()) ? false : result.isEnabled())
+                .setFirstName(ObjectUtils.isEmpty(result.getFirstName())  ? "" : result.getFirstName())
+                .setLastName(ObjectUtils.isEmpty(result.getLastName()) ? "" : result.getLastName())
+                .setEmail(ObjectUtils.isEmpty(result.getEmail()) ? "" : result.getEmail())
                 .setRole(ObjectUtils.isEmpty(result.getRealmRoles()) ? "" : String.join(",", result.getRealmRoles()))
                 .setGroup(ObjectUtils.isEmpty(result.getGroups()) ? "" : String.join(",", result.getGroups()))
+//                .setRole(String.join(",", result.getRealmRoles()))
+//                .setGroup(String.join(",", result.getGroups()))
                 .putAllAttributes(attributeConverter(result.getAttributes()))
                 .build();
     }

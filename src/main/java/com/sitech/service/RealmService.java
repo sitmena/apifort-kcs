@@ -21,7 +21,6 @@ public class RealmService {
     @Inject
     ServerConnection connection;
 
-
     public List<RealmRepresentation> getRealms() {
         return connection.getInstance().realms().findAll();
     }
@@ -54,7 +53,6 @@ public class RealmService {
     }
 
     public GroupRepresentation getRealmGroupByName(String realmName, String groupName) {
-//        return connection.getInstance().realm(realmName).groups().group(groupName).toRepresentation();
         List<GroupRepresentation> groups = connection.getInstance().realm(realmName).groups().groups();
         return groups.stream()
                 .filter(x -> groupName.equals(x.getName()))
@@ -64,10 +62,8 @@ public class RealmService {
 
     }
 
-
     //    @SneakyThrows
     public List<ClientRepresentation> getRealmClients(String realmName) {
-//        return connection.getInstance().realm(realmName).clients().findAll();
         List<ClientRepresentation> lst = connection.getInstance().realm(realmName).clients().findAll();
         if (lst.isEmpty()) {
             throw new ApiFortException("No Client Found");

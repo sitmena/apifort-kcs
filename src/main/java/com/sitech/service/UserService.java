@@ -25,11 +25,6 @@ public class UserService {
     RealmService realmService;
     private static final Logger log = LoggerFactory.getLogger(RealmService.class);
 
-//    void onStart(@Observes StartupEvent ev) {
-//        log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>. The application is starting...");
-//    }
-
-
     public Response addUser(AddUserRequest request) {
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
@@ -41,19 +36,32 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setCredentials(Arrays.asList(credential));
         user.setEnabled(true);
+//        user.setRealmRoles(stringToList(request.getRole()));
+//        user.setGroups(stringToList(request.getGroup()));
         user.setAttributes(prepareUserAttributes(request.getAttributesMap()));
         Response response = connection.getInstance().realm(request.getRealmName()).users().create(user);
         if (StringUtils.isNoneEmpty(request.getRole())) {
             assignRoleToUser(request.getRealmName(), request.getUserName(), request.getRole());
         }
+        if (StringUtils.isNoneEmpty(request.getGroup())) {
+            addUserToGroup(request.getRealmName(), request.getUserName(), request.getGroup());
+        }
         return response;
+    }
+
+    private List<String> stringToList(String value) {
+        String[] strSplit = value.split(",");
+        ArrayList<String> strList = new ArrayList<String>(Arrays.asList(strSplit));
+        return strList;
     }
 
     private Map<String, List<String>> prepareUserAttributes(Map<String, String> requestAttributesMap) {
         Map<String, List<String>> attributes = new HashMap<String, List<String>>();
-        for (var entry : requestAttributesMap.entrySet()) {
-            List<String> value = Arrays.asList(entry.getValue());
-            attributes.put(entry.getKey(), value);
+        if (!Objects.isNull(requestAttributesMap) && !requestAttributesMap.isEmpty()) {
+            for (var entry : requestAttributesMap.entrySet()) {
+                List<String> value = Arrays.asList(entry.getValue());
+                attributes.put(entry.getKey(), value);
+            }
         }
         return attributes;
     }
@@ -84,11 +92,29 @@ public class UserService {
         return realmService.getRealmByName(realmName).users().get(userId).roles().realmLevel().listAvailable();
     }
 
+    private List<String> getUserRoleAsString(List<RoleRepresentation> lst) {
+        List<String> roles = new ArrayList<String>();
+        for (RoleRepresentation role : lst) {
+            roles.add(role.getName());
+        }
+        return roles;
+    }
+
+    private List<String> getUserGroupAsString(List<GroupRepresentation> userGroups) {
+        List<String> groups = new ArrayList<String>();
+        for (GroupRepresentation group : userGroups) {
+            groups.add(group.getName());
+        }
+        return groups;
+    }
+
     public UserRepresentation getUserByAttributes(String realmName, String attribute) {
         List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).users().searchByAttributes(attribute);
         if (!userRepresentations.isEmpty()) {
             for (UserRepresentation usr : userRepresentations) {
                 if (usr.getUsername().equals(attribute)) {
+                    usr.setRealmRoles(getUserRoleAsString(getUserRoleAvailable(realmName, usr.getId())));
+                    usr.setGroups(getUserGroupAsString(getUserGroups(realmName, usr.getId())));
                     return usr;
                 }
             }
@@ -98,7 +124,10 @@ public class UserService {
 
     public UserRepresentation getUserById(String realmName, String userId) {
         UserResource userRepresentations = realmService.getRealmByName(realmName).users().get(userId);
-        return userRepresentations.toRepresentation();
+        UserRepresentation user = userRepresentations.toRepresentation();
+        user.setRealmRoles(getUserRoleAsString(getUserRoleAvailable(realmName, userId)));
+        user.setGroups(getUserGroupAsString(getUserGroups(realmName, userId)));
+        return user;
     }
 
     public List<UserRepresentation> findAllUsersInGroup(String realmName, String groupName) {
@@ -124,7 +153,6 @@ public class UserService {
         for (RoleRepresentation roleRepresentation : roleRepresentations) {
             if (roleRepresentation.getName().equals(userRole)) {
                 userResource.get(usr.getId()).roles().realmLevel().add(Arrays.asList(roleRepresentation));
-                log.info(">> Role Added ... ");
             }
         }
         return "success";
@@ -142,16 +170,33 @@ public class UserService {
         return "";
     }
 
-
     public UserRepresentation updateUser(UpdateUserRequest updateUserRequest) {
-        log.info("^^^^^^^^^^^^ Start Update User Id = {} **** realm = {} ", updateUserRequest.getUserId(), updateUserRequest.getRealmName());
         UserResource userResource = connection.getInstance().realm(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId());
         UserRepresentation userRepresentation = userResource.toRepresentation();
-        userRepresentation.setUsername(updateUserRequest.getUserName());
-        userRepresentation.setEmail(updateUserRequest.getEmail());
-        userRepresentation.setFirstName(updateUserRequest.getFirstName());
-        userRepresentation.setLastName(updateUserRequest.getLastName());
-        userRepresentation.setEnabled(updateUserRequest.getEnabled());
+        if (StringUtils.isNotEmpty(updateUserRequest.getUserName())) {
+            userRepresentation.setUsername(updateUserRequest.getUserName());
+        }
+        if (StringUtils.isNotEmpty(updateUserRequest.getEmail())) {
+            userRepresentation.setEmail(updateUserRequest.getEmail());
+        }
+        if (StringUtils.isNotEmpty(updateUserRequest.getFirstName())) {
+            userRepresentation.setFirstName(updateUserRequest.getFirstName());
+        }
+        if (StringUtils.isNotEmpty(updateUserRequest.getLastName())) {
+            userRepresentation.setLastName(updateUserRequest.getLastName());
+        }
+        if (StringUtils.isNotEmpty(String.valueOf(updateUserRequest.getEnabled()))) {
+            userRepresentation.setEnabled(updateUserRequest.getEnabled());
+        }
+        if (StringUtils.isNotEmpty(updateUserRequest.getRole())) {
+            userRepresentation.setRealmRoles(stringToList(updateUserRequest.getRole()));
+        }
+        if (StringUtils.isNotEmpty(updateUserRequest.getGroup())) {
+            userRepresentation.setGroups(stringToList(updateUserRequest.getGroup()));
+        }
+        if (!updateUserRequest.getAttributesMap().isEmpty()) {
+            userRepresentation.setAttributes(prepareUserAttributes(updateUserRequest.getAttributesMap()));
+        }
         userResource.update(userRepresentation);
         return realmService.getRealmByName(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId()).toRepresentation();
     }
@@ -172,7 +217,6 @@ public class UserService {
         return userRepresentations;
     }
 
-
     public UserRepresentation updateUserAttributes(updateUserAttributesRequest request) {
         UserResource userResource = realmService.getRealmByName(request.getRealmName()).users().get(request.getUserId());
         UserRepresentation userRepresentations = userResource.toRepresentation();
@@ -188,5 +232,17 @@ public class UserService {
         return realmService.getRealmByName(request.getRealmName()).users().get(request.getUserId()).toRepresentation();
     }
 
-
+    public UserRepresentation getUserByEmail(String realmName, String userEmail) {
+        List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).users().searchByAttributes(userEmail);
+        if (!userRepresentations.isEmpty()) {
+            for (UserRepresentation usr : userRepresentations) {
+                if (usr.getEmail().equals(userEmail)) {
+                    usr.setRealmRoles(getUserRoleAsString(getUserRoleAvailable(realmName, usr.getId())));
+                    usr.setGroups(getUserGroupAsString(getUserGroups(realmName, usr.getId())));
+                    return usr;
+                }
+            }
+        }
+        return null;
+    }
 }

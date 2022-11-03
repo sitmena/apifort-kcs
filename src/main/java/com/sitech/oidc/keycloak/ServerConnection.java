@@ -26,9 +26,7 @@ public class ServerConnection {
     @ConfigProperty(name = ServiceConstants.ADMIN_CLIENT_SECRET)
     String adminClientSecret;
 
-
     public Keycloak getInstance() {
-        log.info(">>>>>>>>>>>>>> Requested URL : {}" , serverUrl);
         Keycloak connection = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(masterRealm)
@@ -40,7 +38,6 @@ public class ServerConnection {
     }
 
     public Keycloak getInstanceByUser(String userName, String userPass) {
-
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(masterRealm)
