@@ -23,7 +23,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     UserService userService;
     @Inject
     DtoMapper dtoMapper;
-    private static final Logger log = LoggerFactory.getLogger(RealmGrpcService.class);
 
     @Override
     public Uni<UserResponse> addUser(AddUserRequest request) {
@@ -32,7 +31,7 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     }
 
     @Override
-    public Uni<UserResponse> getUserById(GetUserByUserNameRequest request) {
+    public Uni<UserResponse> getUserById(GetUserByIdRequest request) {
         UserRepresentation result = userService.getUserById(request.getRealmName(),request.getUserId());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
@@ -44,10 +43,11 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     }
 
     @Override
-    public Uni<UserResponse> getUserByEmail(GetUserByUserNameRequest request) {
-        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(),request.getUserEmail());
+    public Uni<UserResponse> getUserByEmail(GetUserByEmailRequest request) {
+        UserRepresentation result = userService.getUserByEmail(request.getRealmName(),request.getUserEmail());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
+
 
     @Override
     public Uni<GetUserGroupsResponse> getUserGroups(GetUserGroupRequest request) {

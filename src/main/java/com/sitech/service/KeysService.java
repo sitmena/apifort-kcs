@@ -18,6 +18,5 @@ public class KeysService {
     public String getPublicKey(String realmName) {
         return publicAccess.getRealmPublicKey(realmName);
     }
-
     public String getRealmCertificate(String realmName) { return publicAccess.getRealmCertificate(realmName); }
 }
