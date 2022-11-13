@@ -6,6 +6,7 @@ import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 
 @GrpcService

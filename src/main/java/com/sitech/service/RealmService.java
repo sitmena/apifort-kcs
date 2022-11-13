@@ -2,7 +2,8 @@ package com.sitech.service;
 
 import com.sitech.exception.ApiFortException;
 import com.sitech.oidc.keycloak.ServerConnection;
-import org.keycloak.admin.client.resource.GroupsResource;
+import com.sitech.realm.RealmNameRequest;
+import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.*;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.List;
+import java.util.Objects;
 
 @ApplicationScoped
 public class RealmService {
@@ -74,5 +76,18 @@ public class RealmService {
 
     public List<RoleRepresentation> getRealmRoles(String realmName) {
         return connection.getInstance().realm(realmName).roles().list();
+    }
+
+    public boolean isRealmExists(String realName ){
+        RealmResource realm = connection.getInstance().realm(realName);
+        if(Objects.isNull(realm)){
+            throw new ApiFortException("No realm Found");
+        }
+        return true;
+    }
+
+    public void logoutAllUsers(RealmNameRequest request){
+        RealmResource realmResource = connection.getInstance().realm(request.getRealmName());
+        realmResource.logoutAll();
     }
 }

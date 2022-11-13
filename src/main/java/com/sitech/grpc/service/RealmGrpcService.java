@@ -3,10 +3,7 @@ package com.sitech.grpc.service;
 import com.google.protobuf.Empty;
 import com.sitech.dto.Dto;
 import com.sitech.mapper.DtoMapper;
-import com.sitech.realm.AddRealmRequest;
-import com.sitech.realm.RealmNameRequest;
-import com.sitech.realm.RealmResponse;
-import com.sitech.realm.RealmsResponse;
+import com.sitech.realm.*;
 import com.sitech.service.RealmService;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
@@ -79,6 +76,12 @@ public class RealmGrpcService implements com.sitech.realm.RealmService {
     public Uni<com.sitech.realm.GetRealmRolesResponse> getRealmRoles(com.sitech.realm.RealmNameRequest request) {
         List<RoleRepresentation> roleRepresentations = realmService.getRealmRoles(request.getRealmName());
         return Uni.createFrom().item(() -> com.sitech.realm.GetRealmRolesResponse.newBuilder().addAllRoleDto(dtoMapper.toRoleList(roleRepresentations)).build());
+    }
+
+    @Override
+    public Uni<StatusResponse> logoutAllUsers(RealmNameRequest request) {
+        realmService.logoutAllUsers(request);
+        return Uni.createFrom().item(() -> com.sitech.realm.StatusResponse.newBuilder().setStatus(200).build());
     }
 
 }

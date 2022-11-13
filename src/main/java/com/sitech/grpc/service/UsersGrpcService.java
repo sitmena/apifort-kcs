@@ -8,8 +8,6 @@ import io.smallrye.mutiny.Uni;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -105,6 +103,12 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     }
 
     @Override
+    public Uni<StatusReplay> updateValidateUserPassword(updateValidateUserPasswordRequest request) {
+        String status = userService.updateValidateUserPassword(request);
+        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
+    }
+
+    @Override
     public Uni<UsersResponse> findAllUsersInRealm(GetUsersRequest request) {
         List<UserRepresentation> userRepresentations = userService.getAllUsersByRealm(request);
         List newUserRepresentations = new ArrayList(userRepresentations);
@@ -116,5 +120,12 @@ public class UsersGrpcService implements com.sitech.users.UserService {
         UserRepresentation response = userService.updateUserAttributes(request);
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(response)).build());
     }
+
+    @Override
+    public Uni<UserStatusResponse> killUserSession(DeleteUserSessionRequest request) {
+        userService.killUserSession(request);
+        return Uni.createFrom().item(() -> UserStatusResponse.newBuilder().setStatus(200).build());
+    }
+
 
 }
