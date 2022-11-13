@@ -3,7 +3,10 @@ package com.sitech.service;
 import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.users.*;
 import org.apache.commons.lang3.StringUtils;
-import org.keycloak.admin.client.resource.*;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.RoleResource;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -38,7 +41,7 @@ public class UserService {
         user.setEnabled(true);
 //        user.setRealmRoles(stringToList(request.getRole()));
 //        user.setGroups(stringToList(request.getGroup()));
-        user.setAttributes(prepareUserAttributes(request.getAttributesMap()));
+        user.setAttributes(prepareUserAttributes(null,request.getAttributesMap()));
         Response response = connection.getInstance().realm(request.getRealmName()).users().create(user);
         if (StringUtils.isNoneEmpty(request.getRole())) {
             assignRoleToUser(request.getRealmName(), request.getUserName(), request.getRole());
@@ -55,8 +58,15 @@ public class UserService {
         return strList;
     }
 
-    private Map<String, List<String>> prepareUserAttributes(Map<String, String> requestAttributesMap) {
+    private Map<String, List<String>> prepareUserAttributes(Map<String,List<String>> userAttributesMap , Map<String, String> requestAttributesMap) {
         Map<String, List<String>> attributes = new HashMap<String, List<String>>();
+
+        if (!Objects.isNull(userAttributesMap) && !userAttributesMap.isEmpty()) {
+            for (var entry : userAttributesMap.entrySet()) {
+                List<String> value = entry.getValue();
+                attributes.put(entry.getKey(), value);
+            }
+        }
         if (!Objects.isNull(requestAttributesMap) && !requestAttributesMap.isEmpty()) {
             for (var entry : requestAttributesMap.entrySet()) {
                 List<String> value = Arrays.asList(entry.getValue());
@@ -195,7 +205,7 @@ public class UserService {
             userRepresentation.setGroups(stringToList(updateUserRequest.getGroup()));
         }
         if (!updateUserRequest.getAttributesMap().isEmpty()) {
-            userRepresentation.setAttributes(prepareUserAttributes(updateUserRequest.getAttributesMap()));
+            userRepresentation.setAttributes(prepareUserAttributes(userRepresentation.getAttributes() , updateUserRequest.getAttributesMap()));
         }
         userResource.update(userRepresentation);
         return realmService.getRealmByName(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId()).toRepresentation();
@@ -222,7 +232,7 @@ public class UserService {
         UserRepresentation userRepresentations = userResource.toRepresentation();
         Map<String, List<String>> attributes = userRepresentations.getAttributes();
         if (Objects.isNull(attributes)) {
-            userRepresentations.setAttributes(prepareUserAttributes(request.getAttributesMap()));
+            userRepresentations.setAttributes(prepareUserAttributes(userRepresentations.getAttributes(),request.getAttributesMap()));
         } else {
             for (var entry : request.getAttributesMap().entrySet()) {
                 attributes.put(entry.getKey(), Arrays.asList(entry.getValue().toString()));
@@ -245,4 +255,17 @@ public class UserService {
         }
         return null;
     }
+
+    public void killUserSession(DeleteUserSessionRequest request) {
+        RealmResource realmResource = connection.getInstance().realm(request.getRealmName());
+        realmResource.deleteSession(request.getSessionState());
+    }
+
+    public String updateValidateUserPassword(updateValidateUserPasswordRequest request) {
+        UserResource userResource = connection.getInstance().realm(request.getRealmName()).users().get(request.getUserId());
+        UserRepresentation userRepresentation = userResource.toRepresentation();
+        return "success";
+    }
+
+
 }

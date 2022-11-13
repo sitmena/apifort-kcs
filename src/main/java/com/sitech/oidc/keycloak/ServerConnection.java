@@ -6,8 +6,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 
@@ -15,7 +13,7 @@ import javax.enterprise.context.ApplicationScoped;
 @Slf4j
 public class ServerConnection {
 
-    private static final Logger log = LoggerFactory.getLogger(ServerConnection.class);
+//    private static final Logger log = LoggerFactory.getLogger(ServerConnection.class);
 
     @ConfigProperty(name = ServiceConstants.SERVER_URL)
     String serverUrl;
@@ -27,14 +25,15 @@ public class ServerConnection {
     String adminClientSecret;
 
     public Keycloak getInstance() {
-        Keycloak connection = KeycloakBuilder.builder()
+        return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(masterRealm)
                 .clientId(adminClientId)
                 .clientSecret(adminClientSecret)
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+//                    .resteasyClient(new ResteasyClientBuilderImpl().connectionPoolSize(10).build())
                 .build();
-        return connection;
+
     }
 
     public Keycloak getInstanceByUser(String userName, String userPass) {
@@ -49,4 +48,6 @@ public class ServerConnection {
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
     }
+
+
 }

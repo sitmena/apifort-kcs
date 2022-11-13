@@ -5,7 +5,6 @@ import com.sitech.access.PublicKeyRequest;
 import com.sitech.service.KeysService;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
