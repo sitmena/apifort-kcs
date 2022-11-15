@@ -1,6 +1,7 @@
 package com.sitech.oidc.keycloak;
 
 import com.sitech.util.ServiceConstants;
+import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.keycloak.OAuth2Constants;
@@ -13,7 +14,6 @@ import javax.enterprise.context.ApplicationScoped;
 @Slf4j
 public class ServerConnection {
 
-//    private static final Logger log = LoggerFactory.getLogger(ServerConnection.class);
 
     @ConfigProperty(name = ServiceConstants.SERVER_URL)
     String serverUrl;
@@ -31,23 +31,25 @@ public class ServerConnection {
                 .clientId(adminClientId)
                 .clientSecret(adminClientSecret)
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-//                    .resteasyClient(new ResteasyClientBuilderImpl().connectionPoolSize(10).build())
                 .build();
-
     }
 
     public Keycloak getInstanceByUser(String userName, String userPass) {
-        return KeycloakBuilder.builder()
-                .serverUrl(serverUrl)
-                .realm(masterRealm)
-                .clientId(adminClientId)
-                .clientSecret(adminClientSecret)
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                .username(userName) //
-                .password(userPass) //
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                .build();
+        Keycloak instance = null;
+        try {
+            instance = KeycloakBuilder.builder()
+                    .serverUrl(serverUrl)
+                    .realm(masterRealm)
+                    .clientId(adminClientId)
+                    .clientSecret(adminClientSecret)
+                    .username(userName) //
+                    .password(userPass) //
+                    .grantType(OAuth2Constants.PASSWORD)
+                    .build();
+        } catch (Exception ex) {
+            throw new UnauthorizedException("old Password ");
+        }
+        return instance;
     }
-
 
 }
