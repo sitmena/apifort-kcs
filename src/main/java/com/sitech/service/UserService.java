@@ -41,7 +41,7 @@ public class UserService {
         user.setEnabled(true);
 //        user.setRealmRoles(stringToList(request.getRole()));
 //        user.setGroups(stringToList(request.getGroup()));
-        user.setAttributes(prepareUserAttributes(null,request.getAttributesMap()));
+        user.setAttributes(prepareUserAttributes(null, request.getAttributesMap()));
         Response response = connection.getInstance().realm(request.getRealmName()).users().create(user);
         if (StringUtils.isNoneEmpty(request.getRole())) {
             assignRoleToUser(request.getRealmName(), request.getUserName(), request.getRole());
@@ -58,7 +58,7 @@ public class UserService {
         return strList;
     }
 
-    private Map<String, List<String>> prepareUserAttributes(Map<String,List<String>> userAttributesMap , Map<String, String> requestAttributesMap) {
+    private Map<String, List<String>> prepareUserAttributes(Map<String, List<String>> userAttributesMap, Map<String, String> requestAttributesMap) {
         Map<String, List<String>> attributes = new HashMap<String, List<String>>();
 
         if (!Objects.isNull(userAttributesMap) && !userAttributesMap.isEmpty()) {
@@ -205,7 +205,7 @@ public class UserService {
             userRepresentation.setGroups(stringToList(updateUserRequest.getGroup()));
         }
         if (!updateUserRequest.getAttributesMap().isEmpty()) {
-            userRepresentation.setAttributes(prepareUserAttributes(userRepresentation.getAttributes() , updateUserRequest.getAttributesMap()));
+            userRepresentation.setAttributes(prepareUserAttributes(userRepresentation.getAttributes(), updateUserRequest.getAttributesMap()));
         }
         userResource.update(userRepresentation);
         return realmService.getRealmByName(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId()).toRepresentation();
@@ -232,7 +232,7 @@ public class UserService {
         UserRepresentation userRepresentations = userResource.toRepresentation();
         Map<String, List<String>> attributes = userRepresentations.getAttributes();
         if (Objects.isNull(attributes)) {
-            userRepresentations.setAttributes(prepareUserAttributes(userRepresentations.getAttributes(),request.getAttributesMap()));
+            userRepresentations.setAttributes(prepareUserAttributes(userRepresentations.getAttributes(), request.getAttributesMap()));
         } else {
             for (var entry : request.getAttributesMap().entrySet()) {
                 attributes.put(entry.getKey(), Arrays.asList(entry.getValue().toString()));
@@ -261,11 +261,17 @@ public class UserService {
         realmResource.deleteSession(request.getSessionState());
     }
 
-    public String updateValidateUserPassword(updateValidateUserPasswordRequest request) {
-        UserResource userResource = connection.getInstance().realm(request.getRealmName()).users().get(request.getUserId());
-        UserRepresentation userRepresentation = userResource.toRepresentation();
+
+    public String sendVerificationLink(SendVerificationLinkRequest request) {
+        UsersResource usersResource = connection.getInstance().realm(request.getRealmName()).users();
+        usersResource.get(request.getUserId()).sendVerifyEmail();
         return "success";
     }
 
+    public String sendResetPassword(SendResetPasswordRequest request) {
+        UsersResource usersResource = connection.getInstance().realm(request.getRealmName()).users();
+        usersResource.get(request.getUserId()).executeActionsEmail(Arrays.asList("UPDATE_PASSWORD"));
+        return "success";
+    }
 
 }
