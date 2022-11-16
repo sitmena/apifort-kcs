@@ -32,6 +32,9 @@ public class UserService {
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
         credential.setValue(request.getPassword());
+
+        credential.setTemporary(false);
+
         UserRepresentation user = new UserRepresentation();
         user.setUsername(request.getUserName());
         user.setFirstName(request.getFirstName());
@@ -90,6 +93,7 @@ public class UserService {
         }
     }
 
+
     public List<GroupRepresentation> getUserGroups(String realmName, String userId) {
         return realmService.getRealmByName(realmName).users().get(userId).groups();
     }
@@ -132,6 +136,22 @@ public class UserService {
         return null;
     }
 
+
+    public UserRepresentation getUserByUserName(String realmName, String userName) {
+        List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).users().search(userName);
+        if (!userRepresentations.isEmpty()) {
+            for (UserRepresentation usr : userRepresentations) {
+                if (usr.getUsername().equals(userName)) {
+                    usr.setRealmRoles(getUserRoleAsString(getUserRoleAvailable(realmName, usr.getId())));
+                    usr.setGroups(getUserGroupAsString(getUserGroups(realmName, usr.getId())));
+                    return usr;
+                }
+            }
+        }
+        return null;
+    }
+
+
     public UserRepresentation getUserById(String realmName, String userId) {
         UserResource userRepresentations = realmService.getRealmByName(realmName).users().get(userId);
         UserRepresentation user = userRepresentations.toRepresentation();
@@ -169,9 +189,9 @@ public class UserService {
     }
 
     public String addUserToGroup(String realmName, String userName, String groupName) {
-        UserRepresentation usr = getUserByAttributes(realmName, userName);
-        List<GroupRepresentation> grouplst = realmService.getRealmGroups(realmName);
-        for (GroupRepresentation gr : grouplst) {
+        UserRepresentation usr = getUserByUserName(realmName, userName);
+        List<GroupRepresentation> groupLst = realmService.getRealmGroups(realmName);
+        for (GroupRepresentation gr : groupLst) {
             if (gr.getName().equals(groupName)) {
                 realmService.getRealmByName(realmName).users().get(usr.getId()).joinGroup(gr.getId());
                 return "success";
@@ -198,14 +218,21 @@ public class UserService {
         if (StringUtils.isNotEmpty(String.valueOf(updateUserRequest.getEnabled()))) {
             userRepresentation.setEnabled(updateUserRequest.getEnabled());
         }
-        if (StringUtils.isNotEmpty(updateUserRequest.getRole())) {
-            userRepresentation.setRealmRoles(stringToList(updateUserRequest.getRole()));
-        }
-        if (StringUtils.isNotEmpty(updateUserRequest.getGroup())) {
-            userRepresentation.setGroups(stringToList(updateUserRequest.getGroup()));
-        }
         if (!updateUserRequest.getAttributesMap().isEmpty()) {
             userRepresentation.setAttributes(prepareUserAttributes(userRepresentation.getAttributes(), updateUserRequest.getAttributesMap()));
+        }
+        if (StringUtils.isNotEmpty(updateUserRequest.getGroup())) {
+            List<GroupRepresentation> groupLst = realmService.getRealmGroups(updateUserRequest.getRealmName());
+            for (GroupRepresentation gr : groupLst) {
+                if (gr.getName().equals(updateUserRequest.getGroup())) {
+                    realmService.getRealmByName(updateUserRequest.getRealmName()).users().get(userRepresentation.getId()).joinGroup(gr.getId());
+                }
+            }
+        }
+        if (StringUtils.isNotEmpty(updateUserRequest.getRole())) {
+            RoleRepresentation testerRealmRole = connection.getInstance().realm(updateUserRequest.getRealmName()).roles().get(updateUserRequest.getRole()).toRepresentation();
+                    userResource.roles().realmLevel().add(Arrays.asList(testerRealmRole));
+
         }
         userResource.update(userRepresentation);
         return realmService.getRealmByName(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId()).toRepresentation();

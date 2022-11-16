@@ -46,7 +46,8 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> getUserByUserName(GetUserByUserNameRequest request) {
-        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(), request.getUserName());
+//        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(), request.getUserName());
+        UserRepresentation result = userService.getUserByUserName(request.getRealmName(), request.getUserName());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
 
