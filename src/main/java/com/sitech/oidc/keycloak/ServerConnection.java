@@ -4,6 +4,7 @@ import com.sitech.util.ServiceConstants;
 import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -33,6 +34,20 @@ public class ServerConnection {
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
     }
+
+    public Keycloak getInstance2() {
+        return KeycloakBuilder.builder()
+                .serverUrl(serverUrl)
+                .realm(masterRealm)
+                .clientId(adminClientId)
+                .clientSecret(adminClientSecret)
+//                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).register(new CustomJacksonProvider()).build())
+                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                .build();
+    }
+
+
+
 
     public Keycloak getInstanceByUser(String userName, String userPass) {
         Keycloak instance = null;

@@ -40,7 +40,6 @@ public class DtoMapper {
                         .setGroup(ObjectUtils.isEmpty(result.getGroups()) ? "" : String.join(",", result.getGroups()))
                         .putAllAttributes(attributeConverter(result.getAttributes()))
                         .build()
-
         ).collect(Collectors.toList());
     }
 
@@ -88,7 +87,6 @@ public class DtoMapper {
         return realmDto;
     }
 
-
     public Dto.UserDto toUser(UserRepresentation result) {
         return Dto.UserDto.newBuilder()
                 .setId(result.getId())
@@ -100,8 +98,6 @@ public class DtoMapper {
                 .setEmail(ObjectUtils.isEmpty(result.getEmail()) ? "" : result.getEmail())
                 .setRole(ObjectUtils.isEmpty(result.getRealmRoles()) ? "" : String.join(",", result.getRealmRoles()))
                 .setGroup(ObjectUtils.isEmpty(result.getGroups()) ? "" : String.join(",", result.getGroups()))
-//                .setRole(String.join(",", result.getRealmRoles()))
-//                .setGroup(String.join(",", result.getGroups()))
                 .putAllAttributes(attributeConverter(result.getAttributes()))
                 .build();
     }
@@ -116,7 +112,6 @@ public class DtoMapper {
         }
         return att;
     }
-
 
     public Dto.UserAccessTokenDto toUserAccessTokenDto(AccessTokenResponse accessTokenResponse) {
         return Dto.UserAccessTokenDto.newBuilder()

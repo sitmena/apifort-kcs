@@ -5,14 +5,12 @@ import com.sitech.service.TokenService;
 import com.sitech.service.UserService;
 import com.sitech.users.*;
 import io.quarkus.grpc.GrpcService;
-import io.quarkus.security.UnauthorizedException;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,15 +23,14 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Inject
     UserService userService;
-
     @Inject
     TokenService tokenService;
-
     @Inject
     DtoMapper dtoMapper;
 
     @Override
     public Uni<UserResponse> addUser(AddUserRequest request) {
+        log.debug(".... Add User = {} " , request.toString());
         userService.addUser(request);
         return getUserByUserName(GetUserByUserNameRequest.newBuilder().setRealmName(request.getRealmName()).setUserName(request.getUserName()).build());
     }
@@ -46,7 +43,8 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> getUserByUserName(GetUserByUserNameRequest request) {
-        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(), request.getUserName());
+//        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(), request.getUserName());
+        UserRepresentation result = userService.getUserByUserName(request.getRealmName(), request.getUserName());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
 
@@ -156,6 +154,5 @@ public class UsersGrpcService implements com.sitech.users.UserService {
         String status = userService.sendResetPassword(request);
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
     }
-
 
 }
