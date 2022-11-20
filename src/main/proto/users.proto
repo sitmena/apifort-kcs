@@ -115,7 +115,8 @@ message AddUserGroupRequest{
 
 message AddUserRequest {
   string userName = 1;
-  string password = 2;
+//  string password = 2;
+  Credentials credentials  = 2;
   string firstName = 3;
   string lastName = 4;
   string email = 5;
@@ -125,6 +126,10 @@ message AddUserRequest {
   map<string, string> attributes = 9;
 }
 
+message Credentials{
+  string password = 1;
+  bool temporary = 2;
+}
 
 message UpdateUserRequest {
   string realmName = 1;

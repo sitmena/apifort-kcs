@@ -3,17 +3,13 @@ package com.sitech.service;
 import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.users.*;
 import org.apache.commons.lang3.StringUtils;
-import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.RoleResource;
-import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
@@ -31,10 +27,8 @@ public class UserService {
     public Response addUser(AddUserRequest request) {
         CredentialRepresentation credential = new CredentialRepresentation();
         credential.setType(CredentialRepresentation.PASSWORD);
-        credential.setValue(request.getPassword());
-
-        credential.setTemporary(false);
-
+        credential.setValue(request.getCredentials().getPassword());
+        credential.setTemporary(request.getCredentials().getTemporary());
         UserRepresentation user = new UserRepresentation();
         user.setUsername(request.getUserName());
         user.setFirstName(request.getFirstName());
@@ -42,8 +36,6 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setCredentials(Arrays.asList(credential));
         user.setEnabled(true);
-//        user.setRealmRoles(stringToList(request.getRole()));
-//        user.setGroups(stringToList(request.getGroup()));
         user.setAttributes(prepareUserAttributes(null, request.getAttributesMap()));
         Response response = connection.getInstance().realm(request.getRealmName()).users().create(user);
         if (StringUtils.isNoneEmpty(request.getRole())) {
@@ -63,7 +55,6 @@ public class UserService {
 
     private Map<String, List<String>> prepareUserAttributes(Map<String, List<String>> userAttributesMap, Map<String, String> requestAttributesMap) {
         Map<String, List<String>> attributes = new HashMap<String, List<String>>();
-
         if (!Objects.isNull(userAttributesMap) && !userAttributesMap.isEmpty()) {
             for (var entry : userAttributesMap.entrySet()) {
                 List<String> value = entry.getValue();
@@ -85,14 +76,13 @@ public class UserService {
             RoleRepresentation testerRealmRole = connection.getInstance().realm(realmName).roles().get(role).toRepresentation();
             List<UserRepresentation> userRepresentations = connection.getInstance().realm(realmName).users().list();
             for (UserRepresentation user : userRepresentations) {
-                if (user.getUsername().equals(userName)) {
+                if (user.getUsername().equalsIgnoreCase(userName)) {
                     UserResource userResource1 = connection.getInstance().realm(realmName).users().get(user.getId());
                     userResource1.roles().realmLevel().add(Arrays.asList(testerRealmRole));
                 }
             }
         }
     }
-
 
     public List<GroupRepresentation> getUserGroups(String realmName, String userId) {
         return realmService.getRealmByName(realmName).users().get(userId).groups();
@@ -136,13 +126,13 @@ public class UserService {
         return null;
     }
 
-
     public UserRepresentation getUserByUserName(String realmName, String userName) {
+
         List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).users().search(userName);
         if (!userRepresentations.isEmpty()) {
             for (UserRepresentation usr : userRepresentations) {
-                if (usr.getUsername().equals(userName)) {
-                    usr.setRealmRoles(getUserRoleAsString(getUserRoleAvailable(realmName, usr.getId())));
+                if (usr.getUsername().equalsIgnoreCase(userName)) {
+                    usr.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, usr.getId())));
                     usr.setGroups(getUserGroupAsString(getUserGroups(realmName, usr.getId())));
                     return usr;
                 }
@@ -150,7 +140,6 @@ public class UserService {
         }
         return null;
     }
-
 
     public UserRepresentation getUserById(String realmName, String userId) {
         UserResource userRepresentations = realmService.getRealmByName(realmName).users().get(userId);
@@ -301,4 +290,39 @@ public class UserService {
         return "success";
     }
 
+
+
+    //        return realmService.getRealmByName(realmName).users().get(userId).roles().realmLevel().listAvailable();
+
+
+//        Optional<UserRepresentation> user = realmService.getRealmByName(realmName).users().get(userId)
+//                .stream().filter(u -> u.getUsername().equals(userName)).findFirst();
+//
+//        if (user.isPresent()) {
+//
+//            UserRepresentation userRepresentation = user.get();
+//            UserResource userResource = keycloak.realm(keycloakRealm).users().get(userRepresentation.getId());
+//            ClientRepresentation clientRepresentation = keycloak.realm(keycloakRealm).clients().findByClientId(keycloakClient).get(0);
+//            List<RoleRepresentation> roles = userResource.roles().clientLevel(clientRepresentation.getId()).listAll();
+//            return ResponseEntity.ok(roles);
+//
+//        } else {
+//            return ResponseEntity.badRequest().build();
+//        }
+
+
+//        Optional<UserRepresentation> user = realmService.getRealmByName(realmName).users().search(userName)
+//                .stream().filter(u -> u.getUsername().equals(userName)).findFirst();
+//
+//        if (user.isPresent()) {
+//
+//            UserRepresentation userRepresentation = user.get();
+//UserResource userResource = keycloak.realm(keycloakRealm).users().get(userRepresentation.getId());
+//ClientRepresentation clientRepresentation = keycloak.realm(keycloakRealm).clients().findByClientId(keycloakClient).get(0);
+//List<RoleRepresentation> roles = userResource.roles().clientLevel(clientRepresentation.getId()).listAll();
+//return ResponseEntity.ok(roles);
+//
+//        } else {
+//            return ResponseEntity.badRequest().build();
+//        }
 }
