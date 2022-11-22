@@ -8,8 +8,14 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.ClientResource;
+import org.keycloak.admin.client.resource.ClientsResource;
+import org.keycloak.representations.idm.ClientRepresentation;
+import org.keycloak.representations.idm.CredentialRepresentation;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.List;
+import java.util.Objects;
 
 @ApplicationScoped
 @Slf4j
@@ -47,8 +53,6 @@ public class ServerConnection {
     }
 
 
-
-
     public Keycloak getInstanceByUser(String userName, String userPass) {
         Keycloak instance = null;
         try {
@@ -66,5 +70,30 @@ public class ServerConnection {
         }
         return instance;
     }
+
+
+    public Keycloak getInstanceByRealmUser(String realmName, String userName, String userPass) {
+        Keycloak instance = null;
+
+        ClientsResource clientsResource = getInstance().realm(realmName).clients();
+        List<ClientRepresentation> clientRepresentations = clientsResource.findByClientId(adminClientId);
+        for(ClientRepresentation clientRepresentation : clientRepresentations) {
+            try {
+                instance = KeycloakBuilder.builder()
+                        .serverUrl(serverUrl)
+                        .realm(realmName)
+                        .clientId(adminClientId)
+                        .clientSecret(clientRepresentation.getSecret())
+                        .username(userName) //
+                        .password(userPass) //
+                        .grantType(OAuth2Constants.PASSWORD)
+                        .build();
+            } catch (Exception ex) {
+                throw new UnauthorizedException("old Password ");
+            }
+        }
+        return instance;
+    }
+
 
 }
