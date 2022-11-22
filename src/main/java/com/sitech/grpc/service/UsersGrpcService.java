@@ -112,7 +112,7 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<StatusReplay> resetUserPassword(ResetUserPasswordRequest request) {
-        AccessTokenResponse token = tokenService.getAccessToken(request.getUserName(), request.getOldPassword());
+        AccessTokenResponse token = tokenService.getUserAccessToken(request.getRealmName() ,request.getUserName(), request.getOldPassword());
         if (!Objects.isNull(token)) {
             UpdateUserPasswordRequest updateUserPasswordRequest = UpdateUserPasswordRequest.newBuilder()
                     .setRealmName(request.getRealmName())
