@@ -1,6 +1,9 @@
 package com.sitech.oidc.keycloak;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sitech.util.ServiceConstants;
+import io.grpc.Status;
 import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -20,8 +23,6 @@ import java.util.Objects;
 @ApplicationScoped
 @Slf4j
 public class ServerConnection {
-
-
     @ConfigProperty(name = ServiceConstants.SERVER_URL)
     String serverUrl;
     @ConfigProperty(name = ServiceConstants.ADMIN_REALM)
@@ -42,14 +43,25 @@ public class ServerConnection {
     }
 
     public Keycloak getInstance2() {
-        return KeycloakBuilder.builder()
-                .serverUrl(serverUrl)
-                .realm(masterRealm)
-                .clientId(adminClientId)
-                .clientSecret(adminClientSecret)
+
+        Keycloak instance  = KeycloakBuilder.builder()
+                    .serverUrl(serverUrl)
+                    .realm(masterRealm)
+                    .clientId(adminClientId)
+                    .clientSecret(adminClientSecret)
 //                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).register(new CustomJacksonProvider()).build())
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                .build();
+                    .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                    .build();
+
+        if(instance.isClosed()){
+           log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+        }
+
+        if(Objects.isNull(instance)){
+                throw Status.NOT_FOUND.getCode().toStatus().withDescription("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX").asRuntimeException();
+        }
+
+        return instance;
     }
 
 

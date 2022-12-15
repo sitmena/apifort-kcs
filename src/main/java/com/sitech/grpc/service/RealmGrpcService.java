@@ -37,6 +37,8 @@ public class RealmGrpcService implements com.sitech.realm.RealmService {
 
     @Override
     public Uni<RealmResponse> getRealmByName(com.sitech.realm.RealmNameRequest request) {
+
+        log.info("<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> {} " , request.getRealmName()) ;
         Dto.RealmDto realmDto = dtoMapper.toRealmDto(realmService.getRealmByName(request.getRealmName()).toRepresentation());
         return Uni.createFrom().item(() -> RealmResponse.newBuilder().setRealmDto(realmDto).build());
     }

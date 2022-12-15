@@ -1,51 +1,136 @@
 package com.sitech;
 
 import io.quarkus.runtime.StartupEvent;
-import io.vertx.core.impl.logging.LoggerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import javax.enterprise.event.Observes;
-import javax.ws.rs.core.Response;
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 public class Test {
 
     void onStart(@Observes StartupEvent ev) {
-        log.info("The application is starting...");
+//        log.info("The application is starting...");
 //        addUserRole("ajweh","ajweh","uma_authorization");
 
-
+//
 //        Keycloak keycloak = KeycloakBuilder.builder()
 //                .serverUrl("http://localhost:8180/")
-//                .realm("master") // shefa-doner
+//                .realm("shefa-charity") // shefa-doner
 //                .grantType(OAuth2Constants.PASSWORD) //
 //                .clientId("backend-client") // shefa-doner-client
-//                .clientSecret("BlTBbHGD2HNIqrWahAXFj7nfF8I5mScw")  // TZ1IELeNqb0FLqBIZHtj87qYZHQkUxJQ
+//                .clientSecret("KBfPJotK5LhlQVk6qi6HzujtKZsoTJG0")  // TZ1IELeNqb0FLqBIZHtj87qYZHQkUxJQ
 //                .username("ajweh")
 //                .password("ajweh")
 //                .build();
 
+/*
         Keycloak keycloak = KeycloakBuilder.builder()
-                .serverUrl("http://localhost:8180/")
-                .realm("master")
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                .clientId("backend-client")
-                .clientSecret("T02GkKu1terJ22z6mo8xFHiDx0iQx1cX")
-                .build();
+            .serverUrl("http://localhost:8180/")
+            .realm("master")
+            .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+            .clientId("backend-client")
+            .clientSecret("T02GkKu1terJ22z6mo8xFHiDx0iQx1cX")
+//                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build();)
+            .build();
 
-        // T02GkKu1terJ22z6mo8xFHiDx0iQx1cX
+        UserResource userResource = keycloak.realm("shefa-charity").users().get("e5114027-0458-4aef-aba2-199c694b345e");
+        UserRepresentation userRepresentations = userResource.toRepresentation();
+
+//        List<CredentialRepresentation> c = userResource.toRepresentation().getCredentials();
+        List<CredentialRepresentation> creds = userResource.credentials();
+
+        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+        for( CredentialRepresentation cre : creds ){
+            log.info("********* >> {} == {} == {} == {} == {} == {} == {} == {}" ,
+                    cre.getId() ,
+                    cre.getValue() ,
+                    cre.getCredentialData() ,
+                    cre.getType() ,
+                    cre.getPriority(),
+                    cre.getSecretData() ,
+                    cre.getCreatedDate(),
+                    cre.getUserLabel());
+
+        }
+        log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+
+//        List<String> expectedCredIds = Arrays.asList(creds.get(0).getId(), creds.get(1).getId(), creds.get(2).getId());
+
+*/
+
+//
+//
+//        String token =    keycloak.tokenManager().getAccessToken().getToken();
+//        log.info(">> {} ", token);
+//        log.info("**************************************************************");
+//        keycloak.tokenManager().invalidate(token);
+//        log.info("**************************************************************");
+//
+//        keycloak.realm("").
+
+//    Keycloak keycloak = KeycloakBuilder.builder()
+//            .serverUrl("http://localhost:8180/")
+//            .realm("master")
+//            .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+//            .clientId("backend-client")
+//            .clientSecret("T02GkKu1terJ22z6mo8xFHiDx0iQx1cX")
+//            .build();
+//
+//        String realmApp = "shefa-charity";
+//
+//        String sessionState = "d0dd7c4b-2251-458c-8b4c-4a1c2861f570";
+//        RealmResource realmResource = keycloak.realm(realmApp);
+//        realmResource.deleteSession(sessionState);
+
+
+//        keycloak.tokenManager().invalidate();
+
+
+
+//        Keycloak keycloak = KeycloakBuilder.builder()
+//                .serverUrl("https://keycloak.shefa.sitech-sites.me/")
+//                .realm("shefa-doner")
+//                .grantType(OAuth2Constants.PASSWORD)
+//                .clientId("shefa-doner-client")
+//                .clientSecret("DQqOO2slE6myuvGXXsuvPXgTXgVD2SqB")
+//                .username("0599998888")
+//                .password("test")
+//                .build();
+
+
+//        Keycloak keycloak = KeycloakBuilder.builder()
+//                .serverUrl("https://keycloak.shefa.sitech-sites.me/")
+//                .realm("shefa-charity")
+//                .grantType(OAuth2Constants.PASSWORD)
+//                .clientId("shefa-charity-client")
+//                .clientSecret("gsWtp9sE0fYidEtcUb1xMokRQrHkuhiY")
+//                .username("ajweh")
+//                .password("ajweh")
+//                .build();
+//
+
+
+//        log.info(">>>>> {} ", keycloak.tokenManager().getAccessToken().getToken());
+    }
+
+
+
+
+
+    //
+
+
+    // T02GkKu1terJ22z6mo8xFHiDx0iQx1cX
 
 //                Keycloak keycloak = KeycloakBuilder.builder()
 //                .serverUrl("http://localhost:8180/")
@@ -133,6 +218,6 @@ public class Test {
 //        }
 //
 //        log.info(">> {} ", keycloak.tokenManager().getAccessToken().getToken());
-    }
+//    }
 }
 
