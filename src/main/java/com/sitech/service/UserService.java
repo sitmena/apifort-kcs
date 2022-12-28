@@ -14,13 +14,11 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.core.Response;
 import java.util.*;
-
 import com.sitech.exception.ErrorResponse;
 
 @ApplicationScoped
@@ -90,8 +88,6 @@ public class UserService {
                 if (usr.getUsername().equalsIgnoreCase(userName)) {
                     usr.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, usr.getId())));
                     usr.setGroups(getUserGroupAsString(getUserGroups(realmName, usr.getId())));
-
-                    log.info("^^^^^^^^^^^^ User {} ", usr.getId());
                     return usr;
                 }
             }
@@ -155,7 +151,6 @@ public class UserService {
         List<RoleRepresentation> roleAvailable = null;
         try {
             roleAvailable = realmService.getRealmByName(realmName).users().get(userId).roles().realmLevel().listAvailable();
-            log.info(".............. Role Available = {} ", roleAvailable.size());
         } catch (Exception ex) {
             exceptionHandler(404, "No Role available for User ".concat(userId));
         }
@@ -271,7 +266,6 @@ public class UserService {
         return userRepresentations;
     }
 
-
     public UserRepresentation updateUserAttributes(updateUserAttributesRequest request) {
         UserResource userResource = getUserResourceById(request.getRealmName(),request.getUserId());
         UserRepresentation userRepresentations = userResource.toRepresentation();
@@ -285,28 +279,19 @@ public class UserService {
         }
         userResource.update(userRepresentations);
         return getUserById(request.getRealmName() , request.getUserId());
-//        return realmService.getRealmByName(request.getRealmName()).users().get(request.getUserId()).toRepresentation();
     }
-
 
     public void killUserSession(DeleteUserSessionRequest request) {
-//        RealmResource realmResource = connection.getInstance().realm(request.getRealmName());
-//        realmResource.deleteSession(request.getSessionState());
-//
         realmService.getRealmByName(request.getRealmName()).deleteSession(request.getSessionState());
-
     }
 
-
     public String sendVerificationLink(SendVerificationLinkRequest request) {
-//        UsersResource usersResource = connection.getInstance().realm(request.getRealmName()).users();
         UsersResource usersResource = getUsers(request.getRealmName());
         usersResource.get(request.getUserId()).sendVerifyEmail();
         return "success";
     }
 
     public String sendResetPassword(SendResetPasswordRequest request) {
-//        UsersResource usersResource = connection.getInstance().realm(request.getRealmName()).users();
         UsersResource usersResource = getUsers(request.getRealmName());
         usersResource.get(request.getUserId()).executeActionsEmail(Arrays.asList("UPDATE_PASSWORD"));
         return "success";
@@ -404,12 +389,10 @@ public class UserService {
         try {
             RealmResource realmResource = realmService.getRealmByName(realmName);
             userResource = realmResource.users();
-            log.info(" Users Size =  {}", userResource.count());
         } catch (Exception ex) {
             exceptionHandler(404, "No Users In ".concat(realmName));
         }
         return userResource;
     }
-
 
 }

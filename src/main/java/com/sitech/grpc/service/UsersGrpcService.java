@@ -4,17 +4,13 @@ import com.sitech.mapper.DtoMapper;
 import com.sitech.service.TokenService;
 import com.sitech.service.UserService;
 import com.sitech.users.*;
-import io.grpc.Status;
-import io.grpc.StatusException;
 import io.quarkus.grpc.GrpcService;
-import io.quarkus.security.UnauthorizedException;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -50,7 +46,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> getUserByUserName(GetUserByUserNameRequest request) {
-//        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(), request.getUserName());
         UserRepresentation result = userService.getUserByUserName(request.getRealmName(), request.getUserName());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }

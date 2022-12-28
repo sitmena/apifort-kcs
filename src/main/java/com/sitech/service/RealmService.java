@@ -1,6 +1,5 @@
 package com.sitech.service;
 
-import com.sitech.exception.ApiFortException;
 import com.sitech.exception.DataConflictException;
 import com.sitech.exception.ErrorResponse;
 import com.sitech.exception.ResourceNotFoundException;
@@ -11,13 +10,12 @@ import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import java.util.List;
-import java.util.Objects;
+
 
 @ApplicationScoped
 public class RealmService {
@@ -73,7 +71,6 @@ public class RealmService {
     }
 
     public List<UserRepresentation> getRealmUsers(String realmName) {
-
         List<UserRepresentation> users = getRealmByName(realmName).users().list();
         if (users.size() == 0) {
             exceptionHandler(404, "Realm ".concat(realmName).concat(" Not have any users"));
@@ -143,6 +140,5 @@ public class RealmService {
             default:
                 throw new InternalServerErrorException(errorResponse.toString());
         }
-
     }
 }

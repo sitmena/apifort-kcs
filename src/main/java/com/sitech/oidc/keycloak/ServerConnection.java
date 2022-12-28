@@ -1,24 +1,16 @@
 package com.sitech.oidc.keycloak;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sitech.util.ServiceConstants;
-import io.grpc.Status;
 import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.ClientsResource;
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
-import java.util.Objects;
 
 @ApplicationScoped
 @Slf4j
@@ -42,29 +34,6 @@ public class ServerConnection {
                 .build();
     }
 
-    public Keycloak getInstance2() {
-
-        Keycloak instance  = KeycloakBuilder.builder()
-                    .serverUrl(serverUrl)
-                    .realm(masterRealm)
-                    .clientId(adminClientId)
-                    .clientSecret(adminClientSecret)
-//                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).register(new CustomJacksonProvider()).build())
-                    .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                    .build();
-
-        if(instance.isClosed()){
-           log.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-        }
-
-        if(Objects.isNull(instance)){
-                throw Status.NOT_FOUND.getCode().toStatus().withDescription("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX").asRuntimeException();
-        }
-
-        return instance;
-    }
-
-
     public Keycloak getInstanceByUser(String userName, String userPass) {
         Keycloak instance = null;
         try {
@@ -86,7 +55,6 @@ public class ServerConnection {
 
     public Keycloak getInstanceByRealmUser(String realmName, String userName, String userPass) {
         Keycloak instance = null;
-
         ClientsResource clientsResource = getInstance().realm(realmName).clients();
         List<ClientRepresentation> clientRepresentations = clientsResource.findByClientId(adminClientId);
         for(ClientRepresentation clientRepresentation : clientRepresentations) {
@@ -106,6 +74,4 @@ public class ServerConnection {
         }
         return instance;
     }
-
-
 }
