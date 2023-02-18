@@ -5,12 +5,11 @@ import com.sitech.dto.Dto;
 import com.sitech.mapper.DtoMapper;
 import com.sitech.realm.*;
 import com.sitech.service.RealmService;
+import com.sitech.realm.ServiceLoginRequest;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.inject.Inject;
 import java.util.List;
 
@@ -21,7 +20,6 @@ public class RealmGrpcService implements com.sitech.realm.RealmService {
     RealmService realmService;
     @Inject
     DtoMapper dtoMapper;
-    private static final Logger log = LoggerFactory.getLogger(RealmGrpcService.class);
 
     @Override
     public Uni<RealmResponse> addRealm(AddRealmRequest request) {
@@ -44,7 +42,7 @@ public class RealmGrpcService implements com.sitech.realm.RealmService {
     @Override
     public Uni<com.sitech.realm.AddRealmGroupResponse> addRealmGroup(com.sitech.realm.AddRealmGroupRequest request) {
         int result = realmService.addRealmGroup(request);
-        return Uni.createFrom().item(() -> com.sitech.realm.AddRealmGroupResponse.newBuilder().setStatus(Long.valueOf(result)).build());
+        return Uni.createFrom().item(() -> com.sitech.realm.AddRealmGroupResponse.newBuilder().setStatus(result).build());
     }
 
     @Override
@@ -83,5 +81,21 @@ public class RealmGrpcService implements com.sitech.realm.RealmService {
         realmService.logoutAllUsers(request);
         return Uni.createFrom().item(() -> com.sitech.realm.StatusResponse.newBuilder().setStatus(200).build());
     }
+
+    @Override
+    public Uni<ServiceLoginResponse> serviceLogin(ServiceLoginRequest request) {
+        AccessTokenResponse token = realmService.getServiceLogin(request);
+        return Uni.createFrom().item(() -> ServiceLoginResponse.newBuilder()
+                .setAccessToken(token.getToken())
+                .setExpiresIn(token.getExpiresIn())
+                .setRefreshExpiresIn(token.getRefreshExpiresIn())
+                .setRefreshToken(token.getRefreshToken())
+                .setTokenType(token.getTokenType())
+                .setNotBeforePolicy(token.getNotBeforePolicy())
+                .setSessionState(token.getSessionState())
+                .setScope(token.getScope())
+                .build());
+    }
+
 
 }

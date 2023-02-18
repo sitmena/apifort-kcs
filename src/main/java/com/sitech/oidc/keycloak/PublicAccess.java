@@ -14,8 +14,6 @@ public class PublicAccess {
     @Inject
     ServerConnection connection;
 
-    private static final Logger log = LoggerFactory.getLogger(PublicAccess.class);
-
     public String getRealmPublicKey(String realName) {
         List<KeysMetadataRepresentation.KeyMetadataRepresentation> keys = connection.getInstance().realm(realName).keys().getKeyMetadata().getKeys();
         for (KeysMetadataRepresentation.KeyMetadataRepresentation key : keys) {

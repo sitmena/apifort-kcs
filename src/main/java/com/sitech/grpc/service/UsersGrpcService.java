@@ -43,7 +43,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> getUserByUserName(GetUserByUserNameRequest request) {
-//        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(), request.getUserName());
         UserRepresentation result = userService.getUserByUserName(request.getRealmName(), request.getUserName());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
@@ -153,6 +152,21 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     public Uni<StatusReplay> sendResetPassword(SendResetPasswordRequest request) {
         String status = userService.sendResetPassword(request);
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
+    }
+
+    @Override
+    public Uni<UserLoginResponse> userLogin(UserLoginRequest request) {
+        AccessTokenResponse token = userService.getUserLogin(request);
+        return Uni.createFrom().item(() -> UserLoginResponse.newBuilder()
+                .setAccessToken(token.getToken())
+                .setExpiresIn(token.getExpiresIn())
+                .setRefreshExpiresIn(token.getRefreshExpiresIn())
+                .setRefreshToken(token.getRefreshToken())
+                .setTokenType(token.getTokenType())
+                .setNotBeforePolicy(token.getNotBeforePolicy())
+                .setSessionState(token.getSessionState())
+                .setScope(token.getScope())
+                .build());
     }
 
 }

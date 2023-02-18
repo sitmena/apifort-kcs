@@ -46,7 +46,29 @@ service UserService {
   rpc SendVerificationLink(SendVerificationLinkRequest) returns (StatusReplay){};
 
   rpc SendResetPassword(SendResetPasswordRequest) returns (StatusReplay){};
+
+  rpc userLogin(UserLoginRequest) returns (UserLoginResponse){};
 }
+
+message UserLoginRequest{
+  string realmName = 1;
+  string clientId = 2;
+  string clientSecret = 3;
+  string userName = 4;
+  string userPassword = 5;
+}
+
+message UserLoginResponse{
+  string accessToken = 1;
+  int64 expiresIn = 2;
+  int64 refreshExpiresIn= 3;
+  string refreshToken= 4;
+  string tokenType = 5;
+  int64 notBeforePolicy= 6;
+  string sessionState = 7;
+  string scope= 8;
+}
+
 
 message SendVerificationLinkRequest{
   string realmName = 1;

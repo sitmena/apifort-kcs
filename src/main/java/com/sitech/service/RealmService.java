@@ -3,12 +3,10 @@ package com.sitech.service;
 import com.sitech.exception.ApiFortException;
 import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.realm.RealmNameRequest;
-import org.keycloak.admin.client.Keycloak;
+import com.sitech.realm.ServiceLoginRequest;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -17,8 +15,6 @@ import java.util.Objects;
 
 @ApplicationScoped
 public class RealmService {
-
-    private static final Logger log = LoggerFactory.getLogger(RealmService.class);
 
     @Inject
     ServerConnection connection;
@@ -89,5 +85,10 @@ public class RealmService {
     public void logoutAllUsers(RealmNameRequest request){
         RealmResource realmResource = connection.getInstance().realm(request.getRealmName());
         realmResource.logoutAll();
+    }
+
+
+    public AccessTokenResponse getServiceLogin(ServiceLoginRequest request){
+        return connection.getInstanceByClientCredentials(request).tokenManager().getAccessToken();
     }
 }
