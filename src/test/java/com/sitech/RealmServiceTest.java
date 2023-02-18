@@ -1,16 +1,5 @@
 package com.sitech;
 
-import com.sitech.realm.GetRealmGroupsResponse;
-import com.sitech.realm.RealmNameRequest;
-import com.sitech.realm.RealmUserResponse;
-import io.quarkus.grpc.GrpcClient;
-import io.quarkus.test.junit.QuarkusTest;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
-import java.time.Duration;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 //@QuarkusTest
 //@Slf4j
 public class RealmServiceTest {

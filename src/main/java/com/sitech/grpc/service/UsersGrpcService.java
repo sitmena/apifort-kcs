@@ -12,10 +12,12 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+
 
 @GrpcService
 @Slf4j
@@ -29,10 +31,11 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     DtoMapper dtoMapper;
 
     @Override
-    public Uni<UserResponse> addUser(AddUserRequest request) {
-        log.debug(".... Add User = {} " , request.toString());
-        userService.addUser(request);
+    public Uni<UserResponse> addUser(AddUserRequest request)  {
+        log.debug(".... Add User = {} ", request.toString());
+        Response userResponse = userService.addUser(request);
         return getUserByUserName(GetUserByUserNameRequest.newBuilder().setRealmName(request.getRealmName()).setUserName(request.getUserName()).build());
+
     }
 
     @Override
@@ -43,7 +46,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> getUserByUserName(GetUserByUserNameRequest request) {
-//        UserRepresentation result = userService.getUserByAttributes(request.getRealmName(), request.getUserName());
         UserRepresentation result = userService.getUserByUserName(request.getRealmName(), request.getUserName());
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(result)).build());
     }
@@ -95,7 +97,7 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     @Override
     public Uni<com.sitech.users.StatusReplay> addUserRole(com.sitech.users.AddUserRoleRequest request) {
         String status = userService.addUserRole(request.getRealmName(), request.getUserName(), request.getRoleName());
-        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
+        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).setResponseMessage("").build());
     }
 
     @Override
@@ -112,13 +114,9 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<StatusReplay> resetUserPassword(ResetUserPasswordRequest request) {
-        AccessTokenResponse token = tokenService.getUserAccessToken(request.getRealmName() ,request.getUserName(), request.getOldPassword());
+        AccessTokenResponse token = tokenService.getUserAccessToken(request.getRealmName(), request.getUserName(), request.getOldPassword());
         if (!Objects.isNull(token)) {
-            UpdateUserPasswordRequest updateUserPasswordRequest = UpdateUserPasswordRequest.newBuilder()
-                    .setRealmName(request.getRealmName())
-                    .setUserId(request.getUserId())
-                    .setPassword(request.getNewPassword())
-                    .build();
+            UpdateUserPasswordRequest updateUserPasswordRequest = UpdateUserPasswordRequest.newBuilder().setRealmName(request.getRealmName()).setUserId(request.getUserId()).setPassword(request.getNewPassword()).build();
             return updateUserPassword(updateUserPasswordRequest);
         }
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode("401").setResponseMessage("Old Password is Invalid").build());

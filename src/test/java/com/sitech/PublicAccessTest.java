@@ -1,14 +1,5 @@
 package com.sitech;
 
-import io.quarkus.grpc.GrpcClient;
-import io.quarkus.test.junit.QuarkusTest;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 //@QuarkusTest
 //@Slf4j
 public class PublicAccessTest {

@@ -6,6 +6,8 @@ public class ServiceConstants {
     public static final String ADMIN_REALM = "keycloak.admin.realm.name";
     public static final String ADMIN_CLIENT_ID = "keycloak.admin.realm.client.id";
     public static final String ADMIN_CLIENT_SECRET = "keycloak.admin.realm.client.id.secret";
+    public static final String REALM_CLIENT_SECRET = "keycloak.realm.client.id.secret";
+
     private static final String realmName = "master";
     private static final String userName = "admin";
     private static final String password = "admin";
