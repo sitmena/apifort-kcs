@@ -27,7 +27,27 @@ service RealmService {
   rpc GetRealmRoles(RealmNameRequest) returns (GetRealmRolesResponse) {};
 
   rpc LogoutAllUsers(RealmNameRequest) returns (StatusResponse) {};
+
+  rpc serviceLogin(ServiceLoginRequest) returns (ServiceLoginResponse){};
 }
+
+message ServiceLoginRequest{
+  string realmName = 1;
+  string clientId = 2;
+  string clientSecret = 3;
+}
+
+message ServiceLoginResponse{
+  string accessToken = 1;
+  int64 expiresIn = 2;
+  int64 refreshExpiresIn= 3;
+  string refreshToken= 4;
+  string tokenType = 5;
+  int64 notBeforePolicy= 6;
+  string sessionState = 7;
+  string scope= 8;
+}
+
 
 message StatusResponse{
   int64 status = 1;

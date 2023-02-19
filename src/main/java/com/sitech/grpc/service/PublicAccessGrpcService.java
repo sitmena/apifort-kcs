@@ -5,15 +5,12 @@ import com.sitech.access.PublicKeyRequest;
 import com.sitech.service.KeysService;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
 @GrpcService
 public class PublicAccessGrpcService implements com.sitech.access.PublicAccessService {
 
-    private static final Logger log = LoggerFactory.getLogger(PublicAccessGrpcService.class);
     @Inject
     KeysService keysService;
 

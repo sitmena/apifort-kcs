@@ -153,4 +153,19 @@ public class UsersGrpcService implements com.sitech.users.UserService {
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
     }
 
+    @Override
+    public Uni<UserLoginResponse> userLogin(UserLoginRequest request) {
+        AccessTokenResponse token = userService.getUserLogin(request);
+        return Uni.createFrom().item(() -> UserLoginResponse.newBuilder()
+                .setAccessToken(token.getToken())
+                .setExpiresIn(token.getExpiresIn())
+                .setRefreshExpiresIn(token.getRefreshExpiresIn())
+                .setRefreshToken(token.getRefreshToken())
+                .setTokenType(token.getTokenType())
+                .setNotBeforePolicy(token.getNotBeforePolicy())
+                .setSessionState(token.getSessionState())
+                .setScope(token.getScope())
+                .build());
+    }
+
 }

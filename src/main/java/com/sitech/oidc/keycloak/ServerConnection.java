@@ -1,5 +1,7 @@
 package com.sitech.oidc.keycloak;
 
+import com.sitech.realm.ServiceLoginRequest;
+import com.sitech.users.UserLoginRequest;
 import com.sitech.util.ServiceConstants;
 import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,8 @@ import java.util.List;
 @ApplicationScoped
 @Slf4j
 public class ServerConnection {
+
+    private static final String UN_AUTHORIZED = "UnAuthorized!";
     @ConfigProperty(name = ServiceConstants.SERVER_URL)
     String serverUrl;
     @ConfigProperty(name = ServiceConstants.ADMIN_REALM)
@@ -34,6 +38,18 @@ public class ServerConnection {
                 .build();
     }
 
+    public Keycloak getInstance2() {
+        return KeycloakBuilder.builder()
+                .serverUrl(serverUrl)
+                .realm(masterRealm)
+                .clientId(adminClientId)
+                .clientSecret(adminClientSecret)
+//                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).register(new CustomJacksonProvider()).build())
+                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                .build();
+    }
+
+
     public Keycloak getInstanceByUser(String userName, String userPass) {
         Keycloak instance = null;
         try {
@@ -47,7 +63,7 @@ public class ServerConnection {
                     .grantType(OAuth2Constants.PASSWORD)
                     .build();
         } catch (Exception ex) {
-            throw new UnauthorizedException("old Password ");
+            throw new UnauthorizedException(UN_AUTHORIZED);
         }
         return instance;
     }
@@ -55,6 +71,7 @@ public class ServerConnection {
 
     public Keycloak getInstanceByRealmUser(String realmName, String userName, String userPass) {
         Keycloak instance = null;
+
         ClientsResource clientsResource = getInstance().realm(realmName).clients();
         List<ClientRepresentation> clientRepresentations = clientsResource.findByClientId(adminClientId);
         for(ClientRepresentation clientRepresentation : clientRepresentations) {
@@ -69,8 +86,47 @@ public class ServerConnection {
                         .grantType(OAuth2Constants.PASSWORD)
                         .build();
             } catch (Exception ex) {
-                throw new UnauthorizedException("old Password ");
+                throw new UnauthorizedException(UN_AUTHORIZED);
             }
+        }
+        return instance;
+    }
+
+
+
+    public Keycloak getInstanceByClientCredentials(ServiceLoginRequest request) {
+
+        log.debug( "...... [{}] [{}] [{}] [{}] " , serverUrl , request.getRealmName() , request.getClientId() , request.getClientSecret());
+
+        Keycloak instance = null;
+        try {
+            instance = KeycloakBuilder.builder()
+                    .serverUrl(serverUrl)
+                    .realm(request.getRealmName().trim())
+                    .clientId(request.getClientId().trim())
+                    .clientSecret(request.getClientId().trim())
+                    .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                    .build();
+        } catch (Exception ex) {
+            throw new UnauthorizedException(UN_AUTHORIZED);
+        }
+        return instance;
+    }
+
+    public Keycloak getInstanceByUserPassword(UserLoginRequest request) {
+        Keycloak instance = null;
+        try {
+            instance = KeycloakBuilder.builder()
+                    .serverUrl(serverUrl)
+                    .realm(request.getRealmName().trim())
+                    .clientId(request.getClientId().trim())
+                    .clientSecret(request.getClientSecret().trim())
+                    .username(request.getUserName().trim()) //
+                    .password(request.getUserPassword().trim()) //
+                    .grantType(OAuth2Constants.PASSWORD)
+                    .build();
+        } catch (Exception ex) {
+            throw new UnauthorizedException(UN_AUTHORIZED);
         }
         return instance;
     }
