@@ -37,13 +37,16 @@ public class Test {
 //                .password("ajweh")
 //                .build();
 
-        Keycloak keycloak = KeycloakBuilder.builder()
-                .serverUrl("http://localhost:8180/")
-                .realm("master")
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                .clientId("backend-client")
-                .clientSecret("T02GkKu1terJ22z6mo8xFHiDx0iQx1cX")
-                .build();
+//        Keycloak keycloak = KeycloakBuilder.builder()
+//                .serverUrl("http://localhost:8180/")
+//                .realm("test")
+//                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+//                .clientId("test-client")
+//                .clientSecret("148Y8F2hb0fsPFTk6DTCKLyVNVZWB5NT")
+//                .build();
+//
+//        log.info(">> {} ", keycloak.tokenManager().getAccessToken().getToken());
+
 
         // T02GkKu1terJ22z6mo8xFHiDx0iQx1cX
 

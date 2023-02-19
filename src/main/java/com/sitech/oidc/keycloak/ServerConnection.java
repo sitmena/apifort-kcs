@@ -95,13 +95,22 @@ public class ServerConnection {
 
 
     public Keycloak getInstanceByClientCredentials(ServiceLoginRequest request) {
-        return KeycloakBuilder.builder()
+
+        log.debug( "...... [{}] [{}] [{}] [{}] " , serverUrl , request.getRealmName() , request.getClientId() , request.getClientSecret());
+
+        Keycloak instance = null;
+        try {
+            instance = KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
-                .realm(request.getRealmName())
-                .clientId(request.getClientId())
-                .clientSecret(request.getClientId())
+                .realm(request.getRealmName().trim())
+                .clientId(request.getClientId().trim())
+                .clientSecret(request.getClientId().trim())
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
+        } catch (Exception ex) {
+            throw new UnauthorizedException(UN_AUTHORIZED);
+        }
+        return instance;
     }
 
     public Keycloak getInstanceByUserPassword(UserLoginRequest request) {
@@ -109,11 +118,11 @@ public class ServerConnection {
         try {
             instance = KeycloakBuilder.builder()
                     .serverUrl(serverUrl)
-                    .realm(request.getRealmName())
-                    .clientId(request.getClientId())
-                    .clientSecret(request.getClientSecret())
-                    .username(request.getUserName()) //
-                    .password(request.getUserPassword()) //
+                    .realm(request.getRealmName().trim())
+                    .clientId(request.getClientId().trim())
+                    .clientSecret(request.getClientSecret().trim())
+                    .username(request.getUserName().trim()) //
+                    .password(request.getUserPassword().trim()) //
                     .grantType(OAuth2Constants.PASSWORD)
                     .build();
         } catch (Exception ex) {

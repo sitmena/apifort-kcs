@@ -4,6 +4,8 @@ import com.sitech.exception.ApiFortException;
 import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.realm.RealmNameRequest;
 import com.sitech.realm.ServiceLoginRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.*;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 @ApplicationScoped
+@Slf4j
 public class RealmService {
 
     @Inject
@@ -89,6 +92,10 @@ public class RealmService {
 
 
     public AccessTokenResponse getServiceLogin(ServiceLoginRequest request){
+//        Keycloak keycloak = connection.getInstanceByClientCredentials(request);
+//        log.info(">>>>>>>. {} ", keycloak.tokenManager().getAccessToken().getToken());
+
         return connection.getInstanceByClientCredentials(request).tokenManager().getAccessToken();
+//        return null;
     }
 }
