@@ -3,12 +3,15 @@ package com.sitech.service;
 import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.users.*;
 import org.apache.commons.lang3.StringUtils;
-import org.keycloak.admin.client.resource.*;
-import org.keycloak.representations.AccessTokenResponse;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.RoleResource;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
@@ -281,8 +284,5 @@ public class UserService {
         return SUCCESS;
     }
 
-    public AccessTokenResponse getUserLogin(UserLoginRequest request){
-       return connection.getInstanceByUserPassword(request).tokenManager().getAccessToken();
-    }
 
 }

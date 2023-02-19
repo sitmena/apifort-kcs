@@ -3,12 +3,10 @@ package com.sitech.service;
 import com.sitech.exception.ApiFortException;
 import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.realm.RealmNameRequest;
-import com.sitech.realm.ServiceLoginRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.*;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -91,7 +89,4 @@ public class RealmService {
     }
 
 
-    public AccessTokenResponse getServiceLogin(ServiceLoginRequest request){
-        return connection.getInstanceByClientCredentials(request).tokenManager().getAccessToken();
-    }
 }

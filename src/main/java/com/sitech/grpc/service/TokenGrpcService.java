@@ -2,14 +2,18 @@ package com.sitech.grpc.service;
 
 import com.sitech.mapper.DtoMapper;
 import com.sitech.service.TokenService;
+import com.sitech.token.LoginByServiceCredentialsRequest;
+import com.sitech.token.LoginByUserCredentialsRequest;
 import com.sitech.token.UserAccessTokenRequest;
 import com.sitech.token.UserAccessTokenResponse;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 
 @GrpcService
+@Slf4j
 public class TokenGrpcService implements com.sitech.token.TokenService {
 
     @Inject
@@ -25,4 +29,24 @@ public class TokenGrpcService implements com.sitech.token.TokenService {
                 )
         ).build());
     }
+
+    @Override
+    public Uni<UserAccessTokenResponse> loginByUserCredentials(LoginByUserCredentialsRequest request) {
+        log.debug(">>>>>>>>> {} " , request.toString());
+        return Uni.createFrom().item(() -> UserAccessTokenResponse.newBuilder().setUserAccessTokenDto(
+                dtoMapper.toUserAccessTokenDto(tokenService.loginByUserCredentials(request)
+                )
+        ).build());
+    }
+
+    @Override
+    public Uni<UserAccessTokenResponse> loginByServiceCredentials(LoginByServiceCredentialsRequest request) {
+        log.debug(">>>>>>>>> {} " , request.toString());
+        return Uni.createFrom().item(() -> UserAccessTokenResponse.newBuilder().setUserAccessTokenDto(
+                dtoMapper.toUserAccessTokenDto(tokenService.loginByServiceCredentials(request)
+                )
+        ).build());
+    }
+
+
 }

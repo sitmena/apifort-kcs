@@ -1,7 +1,7 @@
 package com.sitech.oidc.keycloak;
 
-import com.sitech.realm.ServiceLoginRequest;
-import com.sitech.users.UserLoginRequest;
+import com.sitech.token.LoginByServiceCredentialsRequest;
+import com.sitech.token.LoginByUserCredentialsRequest;
 import com.sitech.util.ServiceConstants;
 import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +11,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.ClientsResource;
 import org.keycloak.representations.idm.ClientRepresentation;
+
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
@@ -37,18 +38,6 @@ public class ServerConnection {
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
     }
-
-    public Keycloak getInstance2() {
-        return KeycloakBuilder.builder()
-                .serverUrl(serverUrl)
-                .realm(masterRealm)
-                .clientId(adminClientId)
-                .clientSecret(adminClientSecret)
-//                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).register(new CustomJacksonProvider()).build())
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                .build();
-    }
-
 
     public Keycloak getInstanceByUser(String userName, String userPass) {
         Keycloak instance = null;
@@ -94,7 +83,7 @@ public class ServerConnection {
 
 
 
-    public Keycloak getInstanceByClientCredentials(ServiceLoginRequest request) {
+    public Keycloak getInstanceByServiceCredentials(LoginByServiceCredentialsRequest request) {
 
         log.debug( "...... [{}] [{}] [{}] [{}] " , serverUrl , request.getRealmName() , request.getClientId() , request.getClientSecret());
 
@@ -104,7 +93,7 @@ public class ServerConnection {
                 .serverUrl(serverUrl)
                 .realm(request.getRealmName().trim())
                 .clientId(request.getClientId().trim())
-                .clientSecret(request.getClientId().trim())
+                .clientSecret(request.getClientSecret().trim())
                 .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
         } catch (Exception ex) {
@@ -113,7 +102,7 @@ public class ServerConnection {
         return instance;
     }
 
-    public Keycloak getInstanceByUserPassword(UserLoginRequest request) {
+    public Keycloak getInstanceByUserCredentials(LoginByUserCredentialsRequest request) {
         Keycloak instance = null;
         try {
             instance = KeycloakBuilder.builder()

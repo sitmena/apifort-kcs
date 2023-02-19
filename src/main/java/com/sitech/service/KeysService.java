@@ -1,6 +1,7 @@
 package com.sitech.service;
 
 import com.sitech.oidc.keycloak.PublicAccess;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 

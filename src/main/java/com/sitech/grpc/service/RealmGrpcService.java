@@ -5,15 +5,16 @@ import com.sitech.dto.Dto;
 import com.sitech.mapper.DtoMapper;
 import com.sitech.realm.*;
 import com.sitech.service.RealmService;
-import com.sitech.realm.ServiceLoginRequest;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
-import org.keycloak.representations.AccessTokenResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.representations.idm.*;
+
 import javax.inject.Inject;
 import java.util.List;
 
 @GrpcService
+@Slf4j
 public class RealmGrpcService implements com.sitech.realm.RealmService {
 
     @Inject
@@ -81,21 +82,5 @@ public class RealmGrpcService implements com.sitech.realm.RealmService {
         realmService.logoutAllUsers(request);
         return Uni.createFrom().item(() -> com.sitech.realm.StatusResponse.newBuilder().setStatus(200).build());
     }
-
-    @Override
-    public Uni<ServiceLoginResponse> serviceLogin(ServiceLoginRequest request) {
-        AccessTokenResponse token = realmService.getServiceLogin(request);
-        return Uni.createFrom().item(() -> ServiceLoginResponse.newBuilder()
-                .setAccessToken(token.getToken())
-                .setExpiresIn(token.getExpiresIn())
-                .setRefreshExpiresIn(token.getRefreshExpiresIn())
-                .setRefreshToken(token.getRefreshToken())
-                .setTokenType(token.getTokenType())
-                .setNotBeforePolicy(token.getNotBeforePolicy())
-                .setSessionState(token.getSessionState())
-                .setScope(token.getScope())
-                .build());
-    }
-
 
 }

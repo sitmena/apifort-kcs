@@ -80,11 +80,10 @@ public class DtoMapper {
     }
 
     public RealmDto toRealmDto(RealmRepresentation realmRepresentation) {
-        RealmDto realmDto = RealmDto.newBuilder().setId(realmRepresentation.getId())
+        return RealmDto.newBuilder().setId(realmRepresentation.getId())
                 .setRealm(realmRepresentation.getRealm())
                 .setDisplayName(ObjectUtils.isEmpty(realmRepresentation.getDisplayName()) ? "" : realmRepresentation.getDisplayName())
                 .setEnabled(realmRepresentation.isEnabled()).build();
-        return realmDto;
     }
 
     public Dto.UserDto toUser(UserRepresentation result) {
@@ -103,7 +102,7 @@ public class DtoMapper {
     }
 
     private Map<String, String> attributeConverter(Map<String, List<String>> attributes) {
-        Map<String, String> att = new HashMap<String, String>();
+        Map<String, String> att = new HashMap<>();
         if (!Objects.isNull(attributes) && !attributes.isEmpty()) {
             for (var entry : attributes.entrySet()) {
                 String value = String.join(",", entry.getValue());
@@ -120,13 +119,8 @@ public class DtoMapper {
                 .setRefreshExpiresIn(accessTokenResponse.getRefreshExpiresIn())
                 .setRefreshToken(Objects.isNull(accessTokenResponse.getRefreshToken()) ? "" : accessTokenResponse.getRefreshToken())
                 .setTokenType(Objects.isNull(accessTokenResponse.getTokenType()) ? "" : accessTokenResponse.getTokenType())
-                .setIdToken(Objects.isNull(accessTokenResponse.getIdToken()) ? "" : accessTokenResponse.getIdToken())
-                .setNotBeforePolicy(Objects.isNull(accessTokenResponse.getNotBeforePolicy()) ? 0 : accessTokenResponse.getNotBeforePolicy())
                 .setSessionState(Objects.isNull(accessTokenResponse.getSessionState()) ? "" : accessTokenResponse.getSessionState())
                 .setScope(Objects.isNull(accessTokenResponse.getScope()) ? "" : accessTokenResponse.getScope())
-                .setError(Objects.isNull(accessTokenResponse.getError()) ? "" : accessTokenResponse.getError())
-                .setErrorDescription(Objects.isNull(accessTokenResponse.getErrorDescription()) ? "" : accessTokenResponse.getErrorDescription())
-                .setErrorUri(Objects.isNull(accessTokenResponse.getErrorUri()) ? "" : accessTokenResponse.getErrorUri())
                 .build();
     }
 }
