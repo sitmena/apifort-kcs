@@ -5,9 +5,6 @@ import com.sitech.exception.ErrorResponse;
 import com.sitech.exception.ResourceNotFoundException;
 import io.quarkus.security.UnauthorizedException;
 import org.keycloak.representations.idm.KeysMetadataRepresentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
