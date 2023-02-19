@@ -101,12 +101,12 @@ public class ServerConnection {
         Keycloak instance = null;
         try {
             instance = KeycloakBuilder.builder()
-                .serverUrl(serverUrl)
-                .realm(request.getRealmName().trim())
-                .clientId(request.getClientId().trim())
-                .clientSecret(request.getClientId().trim())
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                .build();
+                    .serverUrl(serverUrl)
+                    .realm(request.getRealmName().trim())
+                    .clientId(request.getClientId().trim())
+                    .clientSecret(request.getClientId().trim())
+                    .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                    .build();
         } catch (Exception ex) {
             throw new UnauthorizedException(UN_AUTHORIZED);
         }
@@ -130,7 +130,4 @@ public class ServerConnection {
         }
         return instance;
     }
-
-
-
 }

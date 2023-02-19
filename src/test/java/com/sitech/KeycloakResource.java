@@ -4,8 +4,6 @@ package com.sitech;
 //import io.quarkus.test.common.QuarkusTestResourceLifecycleManager;
 //import org.apache.commons.lang3.StringUtils;
 
-import java.util.Map;
-
 public class KeycloakResource { //} implements QuarkusTestResourceLifecycleManager {
 
 //    KeycloakContainer keycloak;

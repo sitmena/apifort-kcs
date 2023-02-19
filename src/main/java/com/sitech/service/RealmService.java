@@ -92,10 +92,6 @@ public class RealmService {
 
 
     public AccessTokenResponse getServiceLogin(ServiceLoginRequest request){
-//        Keycloak keycloak = connection.getInstanceByClientCredentials(request);
-//        log.info(">>>>>>>. {} ", keycloak.tokenManager().getAccessToken().getToken());
-
         return connection.getInstanceByClientCredentials(request).tokenManager().getAccessToken();
-//        return null;
     }
 }

@@ -1,12 +1,6 @@
 package com.sitech;
 
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
-import java.util.Map;
-
-import static io.restassured.RestAssured.given;
-
 /**
  * @author Niko Köbler, https://www.n-k.de, @dasniko
  */

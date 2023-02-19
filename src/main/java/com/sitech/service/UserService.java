@@ -213,7 +213,7 @@ public class UserService {
         }
         if (StringUtils.isNotEmpty(updateUserRequest.getRole())) {
             RoleRepresentation testerRealmRole = connection.getInstance().realm(updateUserRequest.getRealmName()).roles().get(updateUserRequest.getRole()).toRepresentation();
-                    userResource.roles().realmLevel().add(Arrays.asList(testerRealmRole));
+            userResource.roles().realmLevel().add(Arrays.asList(testerRealmRole));
 
         }
         userResource.update(userRepresentation);
@@ -282,7 +282,7 @@ public class UserService {
     }
 
     public AccessTokenResponse getUserLogin(UserLoginRequest request){
-       return connection.getInstanceByUserPassword(request).tokenManager().getAccessToken();
+        return connection.getInstanceByUserPassword(request).tokenManager().getAccessToken();
     }
 
 }
