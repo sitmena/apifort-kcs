@@ -1,9 +1,14 @@
 package com.sitech.oidc.keycloak;
 
+import com.sitech.exception.DataConflictException;
+import com.sitech.exception.ErrorResponse;
+import com.sitech.exception.ResourceNotFoundException;
+import io.quarkus.security.UnauthorizedException;
 import org.keycloak.representations.idm.KeysMetadataRepresentation;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.InternalServerErrorException;
 import java.util.List;
 
 @ApplicationScoped
