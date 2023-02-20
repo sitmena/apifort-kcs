@@ -52,7 +52,9 @@ public class ExceptionHandlingServerCallListener<ReqT, RespT> extends Forwarding
                 serverCall.close(Status.ALREADY_EXISTS.withDescription(exception.getMessage()), metadata);
             } else if (exception instanceof InternalServerErrorException) {
                 serverCall.close(Status.INTERNAL.withDescription(new ObjectMapper().writeValueAsString(exception.getMessage())), metadata);
-            } else {
+            } else if (exception instanceof NotFoundException) {
+                serverCall.close(Status.NOT_FOUND.withDescription(new ObjectMapper().writeValueAsString(exception.getMessage())), metadata);
+            }else {
                 serverCall.close(Status.CANCELLED, metadata);
             }
         } catch (JsonProcessingException e) {
