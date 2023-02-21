@@ -9,7 +9,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 @Path("/realms/{realm}/protocol/openid-connect/token")
-@RegisterRestClient
+@RegisterRestClient(configKey = "refresh-api")
 public interface RefreshTokenService {
 
     @POST
