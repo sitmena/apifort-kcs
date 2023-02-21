@@ -2,10 +2,7 @@ package com.sitech.grpc.service;
 
 import com.sitech.mapper.DtoMapper;
 import com.sitech.service.TokenService;
-import com.sitech.token.LoginByServiceCredentialsRequest;
-import com.sitech.token.LoginByUserCredentialsRequest;
-import com.sitech.token.UserAccessTokenRequest;
-import com.sitech.token.UserAccessTokenResponse;
+import com.sitech.token.*;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +43,13 @@ public class TokenGrpcService implements com.sitech.token.TokenService {
                 dtoMapper.toUserAccessTokenDto(tokenService.loginByServiceCredentials(request)
                 )
         ).build());
+    }
+
+    @Override
+    public Uni<UserAccessTokenResponse> refreshToken(RefreshTokenRequest request) {
+        log.debug(">>>>>> {} " , request.toString());
+        return Uni.createFrom().item(() -> UserAccessTokenResponse.newBuilder().setUserAccessTokenDto(
+                dtoMapper.toUserAccessTokenDto(tokenService.refreshToken(request))).build());
     }
 
 

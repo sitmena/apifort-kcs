@@ -119,7 +119,4 @@ public class ServerConnection {
         }
         return instance;
     }
-
-
-
 }
