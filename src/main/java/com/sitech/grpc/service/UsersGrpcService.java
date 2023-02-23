@@ -33,8 +33,9 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> addUser(AddUserRequest request)  {
-        log.debug(".... Add User = {} ", request.toString());
-        Response userResponse = userService.addUser(request);
+        log.info(".... Add User = {} ", request.toString());
+        Response response = userService.addUser(request);
+//        log.info("%%%%%%%%%%%%%%%%%%%%%%% "+response.readEntity(UserRepresentation.class).getId());
         return getUserByUserName(GetUserByUserNameRequest.newBuilder().setRealmName(request.getRealmName()).setUserName(request.getUserName()).build());
 
     }
