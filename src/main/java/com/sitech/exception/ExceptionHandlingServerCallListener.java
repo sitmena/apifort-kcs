@@ -8,7 +8,7 @@ import io.grpc.ServerCall;
 import io.grpc.Status;
 import io.quarkus.security.UnauthorizedException;
 
-import javax.ws.rs.BadRequestException;
+
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 

@@ -3,12 +3,9 @@ package com.sitech.service;
 
 import com.sitech.exception.ApiFortException;
 import com.sitech.exception.DataConflictException;
-import com.sitech.exception.ResourceNotFoundException;
-import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.users.*;
 import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.keycloak.admin.client.resource.*;
@@ -18,7 +15,6 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.*;
@@ -29,8 +25,8 @@ import com.sitech.exception.ErrorResponse;
 public class UserService {
 
     private static final String SUCCESS = "success";
-    @Inject
-    ServerConnection connection;
+    public static final String NOT_FOUND = " Not Found";
+
     @Inject
     RealmService realmService;
 
@@ -47,7 +43,7 @@ public class UserService {
         user.setCredentials(Arrays.asList(credential));
         user.setEnabled(true);
         user.setAttributes(prepareUserAttributes(null, request.getAttributesMap()));
-        Response response = connection.getInstance().realm(request.getRealmName()).users().create(user);
+        Response response = realmService.getRealmByName(request.getRealmName()).users().create(user);
         int responseCode =  response.getStatus();
         if (responseCode == HttpStatus.SC_CREATED) {
             if (StringUtils.isNoneEmpty(request.getRole())) {
@@ -113,7 +109,7 @@ public class UserService {
                 }
             }
         }
-        exceptionHandler(404, "Email ".concat(userEmail).concat(" Not Found"));
+        exceptionHandler(404, "Email ".concat(userEmail).concat(NOT_FOUND));
         return null;
     }
 
@@ -122,7 +118,7 @@ public class UserService {
         List<String> roleLst = Arrays.stream(realmRole.split(",")).toList();
         try{
             for (String role : roleLst) {
-                RealmResource realm = connection.getInstance().realm(realmName);
+                RealmResource realm = realmService.getRealmByName(realmName);
                 RoleRepresentation realmRoleRepresentation = realm.roles().get(role).toRepresentation();
                 List<UserRepresentation> userRepresentations = realm.users().list();
                 for (UserRepresentation user : userRepresentations) {
@@ -133,7 +129,7 @@ public class UserService {
                 }
             }
         }catch (NotFoundException ex) {
-            exceptionHandler(404, "Role ".concat(realmRole).concat(" Not Found"));
+            exceptionHandler(404, "Role ".concat(realmRole).concat(NOT_FOUND));
         }
     }
 
@@ -176,7 +172,7 @@ public class UserService {
             }
         }
         exceptionHandler(404, "Group ".concat(groupName).concat(" doesn't have any member"));
-        return new ArrayList<UserRepresentation>();
+        return new ArrayList<>();
     }
 
 
@@ -186,10 +182,10 @@ public class UserService {
         for (GroupRepresentation gr : groupLst) {
             if (gr.getName().equals(groupName)) {
                 realmService.getRealmByName(realmName).users().get(usr.getId()).joinGroup(gr.getId());
-                return "success";
+                return SUCCESS;
             }
         }
-        exceptionHandler(404, "Group ".concat(groupName).concat(" Not Found"));
+        exceptionHandler(404, "Group ".concat(groupName).concat(NOT_FOUND));
         return "";
     }
 
@@ -212,7 +208,7 @@ public class UserService {
         for (RoleRepresentation roleRepresentation : roleRepresentations) {
             if (roleRepresentation.getName().equals(userRole)) {
                 userResource.get(usr.getId()).roles().realmLevel().add(Arrays.asList(roleRepresentation));
-                return "success";
+                return SUCCESS;
             }
         }
         exceptionHandler(404, " Role ".concat(userRole).concat(" Not Available to added to User ").concat(userName));
@@ -252,7 +248,7 @@ public class UserService {
             }
         }
         if (StringUtils.isNotEmpty(updateUserRequest.getRole())) {
-            RoleRepresentation testerRealmRole = connection.getInstance().realm(updateUserRequest.getRealmName()).roles().get(updateUserRequest.getRole()).toRepresentation();
+            RoleRepresentation testerRealmRole = realmService.getRealmByName(updateUserRequest.getRealmName()).roles().get(updateUserRequest.getRole()).toRepresentation();
             userResource.roles().realmLevel().add(Arrays.asList(testerRealmRole));
 
         }
@@ -268,12 +264,11 @@ public class UserService {
         credential.setValue(request.getPassword());
         userRepresentation.setCredentials(Arrays.asList(credential));
         userResource.update(userRepresentation);
-        return "success";
+        return SUCCESS;
     }
 
     public List<UserRepresentation> getAllUsersByRealm(GetUsersRequest request) {
-        List<UserRepresentation> userRepresentations = connection.getInstance().realm(request.getRealmName()).users().list();
-        return userRepresentations;
+        return realmService.getRealmByName(request.getRealmName()).users().list();
     }
 
     public UserRepresentation updateUserAttributes(updateUserAttributesRequest request) {
@@ -284,7 +279,7 @@ public class UserService {
             userRepresentations.setAttributes(prepareUserAttributes(userRepresentations.getAttributes(), request.getAttributesMap()));
         } else {
             for (var entry : request.getAttributesMap().entrySet()) {
-                attributes.put(entry.getKey(), Arrays.asList(entry.getValue().toString()));
+                attributes.put(entry.getKey(), Arrays.asList(entry.getValue()));
             }
         }
         userResource.update(userRepresentations);
@@ -298,13 +293,13 @@ public class UserService {
     public String sendVerificationLink(SendVerificationLinkRequest request) {
         UsersResource usersResource = getUsers(request.getRealmName());
         usersResource.get(request.getUserId()).sendVerifyEmail();
-        return "success";
+        return SUCCESS;
     }
 
     public String sendResetPassword(SendResetPasswordRequest request) {
         UsersResource usersResource = getUsers(request.getRealmName());
         usersResource.get(request.getUserId()).executeActionsEmail(Arrays.asList("UPDATE_PASSWORD"));
-        return "success";
+        return  SUCCESS;
     }
 
     private void exceptionHandler(int statusCode, String exceptionMessage) {
@@ -325,42 +320,8 @@ public class UserService {
         }
     }
 
-    private int responseHandler(Response response) {
-
-        int responseCode = response.getStatus();
-
-        log.info("±±±±±±±±±±±± {} ",responseCode);
-
-
-        if (responseCode == 401) {
-            ErrorResponse errorMsg = response.readEntity(ErrorResponse.class);
-            errorMsg.setCode(responseCode);
-            throw new UnauthorizedException(errorMsg.toString());
-        }
-        if (responseCode == 404) {
-            log.info("_()(_(_(_( {} " , response.readEntity(String.class));
-            ErrorResponse errorMsg = new ErrorResponse();
-            errorMsg.setCode(responseCode);
-            errorMsg.setErrorMessage(response.readEntity(String.class));
-            throw new ResourceNotFoundException(errorMsg.toString());
-        }
-        if (responseCode == 409) {
-            ErrorResponse errorMsg = response.readEntity(ErrorResponse.class);
-            errorMsg.setCode(responseCode);
-            throw new DataConflictException(errorMsg.toString());
-        }
-        if (responseCode == 500) {
-            ErrorResponse errorMsg = response.readEntity(ErrorResponse.class);
-            errorMsg.setCode(responseCode);
-            throw new InternalServerErrorException(errorMsg.toString());
-        }
-        log.info("-------------------");
-        return responseCode;
-    }
-
-
     private Map<String, List<String>> prepareUserAttributes(Map<String, List<String>> userAttributesMap, Map<String, String> requestAttributesMap) {
-        Map<String, List<String>> attributes = new HashMap<String, List<String>>();
+        Map<String, List<String>> attributes = new HashMap<>();
         if (!Objects.isNull(userAttributesMap) && !userAttributesMap.isEmpty()) {
             for (var entry : userAttributesMap.entrySet()) {
                 List<String> value = entry.getValue();

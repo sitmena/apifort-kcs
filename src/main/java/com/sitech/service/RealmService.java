@@ -1,26 +1,17 @@
 package com.sitech.service;
 
-import com.sitech.exception.DataConflictException;
-import com.sitech.exception.ErrorResponse;
-import com.sitech.exception.ResourceNotFoundException;
-import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.realm.RealmNameRequest;
-import io.quarkus.security.UnauthorizedException;
+import com.sitech.util.ProfileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.*;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.InternalServerErrorException;
 import java.util.List;
 
 @ApplicationScoped
 @Slf4j
-public class RealmService {
-
-    @Inject
-    ServerConnection connection;
+public class RealmService extends ProfileUtil {
 
     public List<RealmRepresentation> getRealms() {
         List<RealmRepresentation> realm = null;
@@ -41,36 +32,26 @@ public class RealmService {
         try {
             connection.getInstance().realms().create(realmRepresentation);
         } catch (Exception ex) {
-            exceptionHandler(409, "Realm ".concat(realmName).concat(" Already Exist"));
+            exceptionHandler(409, REALM.concat(realmName).concat(" Already Exist"));
         }
-    }
-
-    public RealmResource getRealmByName(String realmName) {
-        RealmResource realmResource = null;
-        try {
-            realmResource = connection.getInstance().realm(realmName);
-        } catch (Exception ex) {
-            exceptionHandler(404, "Realm ".concat(realmName).concat(" Not Found"));
-        }
-        return realmResource;
     }
 
     public int addRealmGroup(com.sitech.realm.AddRealmGroupRequest request) {
         int result=0;
-        try {
-            GroupRepresentation groupRepresentation = new GroupRepresentation();
-            groupRepresentation.setName(request.getGroupName());
-            result = getRealmByName(request.getRealmName()).groups().add(groupRepresentation).getStatus();
-        } catch (Exception ex) {
-            exceptionHandler(500, "Error occurred during Adding Group,please contact your system administrator");
+        GroupRepresentation groupRepresentation = new GroupRepresentation();
+        groupRepresentation.setName(request.getGroupName());
+        RealmResource realm = getRealmByName(request.getRealmName());
+        result = realm.groups().add(groupRepresentation).getStatus();
+        if(result == 409){
+           exceptionHandler(409, "Group Already Exist.");
         }
         return result;
     }
 
     public List<UserRepresentation> getRealmUsers(String realmName) {
         List<UserRepresentation> users = getRealmByName(realmName).users().list();
-        if (users.size() == 0) {
-            exceptionHandler(404, "Realm ".concat(realmName).concat(" Not have any users"));
+        if (users.isEmpty()) {
+            exceptionHandler(404, REALM.concat(realmName).concat(" Not have any users"));
         }
         return users;
     }
@@ -78,15 +59,15 @@ public class RealmService {
     public List<GroupRepresentation> getRealmGroups(String realmName) {
         List<GroupRepresentation> group = null;
         try {
-            group = connection.getInstance().realm(realmName).groups().groups();
+            group = getRealmByName(realmName).groups().groups();
         } catch (Exception ex) {
-            exceptionHandler(404, "Realm ".concat(realmName).concat(" Not Found"));
+            exceptionHandler(404, REALM.concat(realmName).concat(" Not Found"));
         }
         return group;
     }
 
     public GroupRepresentation getRealmGroupByName(String realmName, String groupName) {
-        List<GroupRepresentation> groups = connection.getInstance().realm(realmName).groups().groups();
+        List<GroupRepresentation> groups = getRealmByName(realmName).groups().groups();
         return groups.stream()
                 .filter(x -> groupName.equals(x.getName()))
                 .findAny()
@@ -122,21 +103,4 @@ public class RealmService {
     public void logoutAllUsers(RealmNameRequest request) {
         getRealmByName(request.getRealmName()).logoutAll();
     }
-
-    private void exceptionHandler(int statusCode, String exceptionMessage) {
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setCode(statusCode);
-        errorResponse.setErrorMessage(exceptionMessage);
-        switch (statusCode) {
-            case 401:
-                throw new UnauthorizedException(errorResponse.toString());
-            case 404:
-                throw new ResourceNotFoundException(errorResponse.toString());
-            case 409:
-                throw new DataConflictException(errorResponse.toString());
-            default:
-                throw new InternalServerErrorException(errorResponse.toString());
-        }
-    }
-
 }
