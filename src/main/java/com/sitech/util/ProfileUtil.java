@@ -26,8 +26,7 @@ public class ProfileUtil {
 
     public List<String> stringToList(String value) {
         String[] strSplit = value.split(",");
-        ArrayList<String> strList = new ArrayList<>(Arrays.asList(strSplit));
-        return strList;
+        return new ArrayList<>(Arrays.asList(strSplit));
     }
 
     public RealmResource getRealmByName(String realmName) {
