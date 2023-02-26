@@ -11,11 +11,8 @@ import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,10 +30,8 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UserResponse> addUser(AddUserRequest request)  {
-        log.debug(".... Add User = {} ", request.toString());
-        Response userResponse = userService.addUser(request);
+        userService.addUser(request);
         return getUserByUserName(GetUserByUserNameRequest.newBuilder().setRealmName(request.getRealmName()).setUserName(request.getUserName()).build());
-
     }
 
     @Override
@@ -90,8 +85,7 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UsersResponse> findUserByRole(FindUserRoleRequest request) {
-        Collection<UserRepresentation> userRepresentations = userService.findUserByRole(request.getRealmName(), request.getRoleName());
-        List newUserRepresentations = new ArrayList(userRepresentations);
+        List<UserRepresentation> newUserRepresentations = new ArrayList<>(userService.findUserByRole(request.getRealmName(), request.getRoleName()));
         return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(newUserRepresentations)).build());
     }
 
@@ -125,8 +119,7 @@ public class UsersGrpcService implements com.sitech.users.UserService {
 
     @Override
     public Uni<UsersResponse> findAllUsersInRealm(GetUsersRequest request) {
-        List<UserRepresentation> userRepresentations = userService.getAllUsersByRealm(request);
-        List newUserRepresentations = new ArrayList(userRepresentations);
+        List<UserRepresentation> newUserRepresentations = new ArrayList<>(userService.getAllUsersByRealm(request));
         return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(newUserRepresentations)).build());
     }
 

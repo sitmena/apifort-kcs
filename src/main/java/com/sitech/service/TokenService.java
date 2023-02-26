@@ -48,8 +48,7 @@ public class TokenService {
         if(response.getStatus() != HttpStatus.SC_OK){
             throw new ApiFortException("Something went wrong please contact system administrator! ");
         }
-        AccessTokenResponse accessTokenResponse = response.readEntity(AccessTokenResponse.class);
-        return accessTokenResponse;
+        return response.readEntity(AccessTokenResponse.class);
     }
 
     private MultivaluedMap<String, String> buildForm(RefreshTokenRequest request) {

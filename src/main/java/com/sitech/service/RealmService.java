@@ -1,27 +1,26 @@
 package com.sitech.service;
 
-import com.sitech.exception.ApiFortException;
-import com.sitech.oidc.keycloak.ServerConnection;
 import com.sitech.realm.RealmNameRequest;
+import com.sitech.util.ProfileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.*;
-
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.List;
-import java.util.Objects;
 
 @ApplicationScoped
 @Slf4j
-public class RealmService {
-
-    @Inject
-    ServerConnection connection;
+public class RealmService extends ProfileUtil {
 
     public List<RealmRepresentation> getRealms() {
-        return connection.getInstance().realms().findAll();
+        List<RealmRepresentation> realm = null;
+        try {
+            realm = connection.getInstance().realms().findAll();
+        } catch (Exception ex) {
+            exceptionHandler(404, "Realms Not Found");
+        }
+        return realm;
     }
 
     public void createRealm(String realmName, String displayName) {
@@ -30,63 +29,78 @@ public class RealmService {
         realmRepresentation.setRealm(realmName);
         realmRepresentation.setDisplayName(displayName);
         realmRepresentation.setEnabled(true);
-        connection.getInstance().realms().create(realmRepresentation);
-    }
-
-    public RealmResource getRealmByName(String realmName) {
-        return connection.getInstance().realm(realmName);
+        try {
+            connection.getInstance().realms().create(realmRepresentation);
+        } catch (Exception ex) {
+            exceptionHandler(409, REALM.concat(realmName).concat(" Already Exist"));
+        }
     }
 
     public int addRealmGroup(com.sitech.realm.AddRealmGroupRequest request) {
+        int result=0;
         GroupRepresentation groupRepresentation = new GroupRepresentation();
         groupRepresentation.setName(request.getGroupName());
-        return connection.getInstance().realm(request.getRealmName()).groups().add(groupRepresentation).getStatus();
+        RealmResource realm = getRealmByName(request.getRealmName());
+        result = realm.groups().add(groupRepresentation).getStatus();
+        if(result == 409){
+           exceptionHandler(409, "Group Already Exist.");
+        }
+        return result;
     }
 
     public List<UserRepresentation> getRealmUsers(String realmName) {
-        return connection.getInstance().realm(realmName).users().list();
+        List<UserRepresentation> users = getRealmByName(realmName).users().list();
+        if (users.isEmpty()) {
+            exceptionHandler(404, REALM.concat(realmName).concat(" Not have any users"));
+        }
+        return users;
     }
 
     public List<GroupRepresentation> getRealmGroups(String realmName) {
-        return connection.getInstance().realm(realmName).groups().groups();
+        List<GroupRepresentation> group = null;
+        try {
+            group = getRealmByName(realmName).groups().groups();
+        } catch (Exception ex) {
+            exceptionHandler(404, REALM.concat(realmName).concat(" Not Found"));
+        }
+        return group;
     }
 
     public GroupRepresentation getRealmGroupByName(String realmName, String groupName) {
-        List<GroupRepresentation> groups = connection.getInstance().realm(realmName).groups().groups();
+        List<GroupRepresentation> groups = getRealmByName(realmName).groups().groups();
         return groups.stream()
                 .filter(x -> groupName.equals(x.getName()))
                 .findAny()
                 .orElseThrow(() -> new BadRequestException("No Group Found"));
-
-
     }
 
     //    @SneakyThrows
     public List<ClientRepresentation> getRealmClients(String realmName) {
-        List<ClientRepresentation> lst = connection.getInstance().realm(realmName).clients().findAll();
-        if (lst.isEmpty()) {
-            throw new ApiFortException("No Client Found");
-        } else {
-            return lst;
+        List<ClientRepresentation> lst = null;
+        try {
+            lst = getRealmByName(realmName).clients().findAll();
+            if (lst.isEmpty()) {
+                exceptionHandler(404, " No Client Found");
+            } else {
+                return lst;
+            }
+        } catch (Exception ex) {
+            exceptionHandler(404, " No Client Found");
         }
+        return lst;
     }
 
     public List<RoleRepresentation> getRealmRoles(String realmName) {
-        return connection.getInstance().realm(realmName).roles().list();
-    }
-
-    public boolean isRealmExists(String realName ){
-        RealmResource realm = connection.getInstance().realm(realName);
-        if(Objects.isNull(realm)){
-            throw new ApiFortException("No realm Found");
+        List<RoleRepresentation> role = null;
+        try {
+            role = getRealmByName(realmName).roles().list();
+        } catch (Exception ex) {
+            exceptionHandler(404, " No Role Found");
         }
-        return true;
+        return role;
     }
 
-    public void logoutAllUsers(RealmNameRequest request){
-        RealmResource realmResource = connection.getInstance().realm(request.getRealmName());
-        realmResource.logoutAll();
+    public void logoutAllUsers(RealmNameRequest request) {
+        getRealmByName(request.getRealmName()).logoutAll();
     }
-
-
 }
