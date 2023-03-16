@@ -268,7 +268,11 @@ public class UserService {
     }
 
     public List<UserRepresentation> getAllUsersByRealm(GetUsersRequest request) {
-        return realmService.getRealmByName(request.getRealmName()).users().list();
+        if( request.getFrom() >=0 && request.getSize() > 0 ){
+                return realmService.getRealmByName(request.getRealmName()).users().list(request.getFrom(), request.getSize());
+        }else {
+                return realmService.getRealmByName(request.getRealmName()).users().list();
+        }
     }
 
     public UserRepresentation updateUserAttributes(updateUserAttributesRequest request) {
