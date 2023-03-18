@@ -166,6 +166,8 @@ message StatusReplay {
 
 message GetUsersRequest{
   string realmName = 1;
+  int32 from = 2;
+  int32 size = 3;
 }
 
 message updateUserAttributesRequest{
