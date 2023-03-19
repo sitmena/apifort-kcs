@@ -188,6 +188,18 @@ public class UserService {
         exceptionHandler(404, "Group ".concat(groupName).concat(NOT_FOUND));
         return null;
     }
+    public String removeUserFromGroup(String realmName, String userName, String groupName) {
+        UserRepresentation usr = getUserByUserName(realmName, userName);
+        List<GroupRepresentation> groupLst = realmService.getRealmGroups(realmName);
+        for (GroupRepresentation gr : groupLst) {
+            if (gr.getName().equals(groupName)) {
+                realmService.getRealmByName(realmName).users().get(usr.getId()).leaveGroup(gr.getId());
+                return SUCCESS;
+            }
+        }
+        exceptionHandler(404, "Group ".concat(groupName).concat(NOT_FOUND));
+        return null;
+    }
 
     public Collection<UserRepresentation> findUserByRole(String realmName, String roleName) {
         RoleResource roleResource = null;
@@ -212,6 +224,20 @@ public class UserService {
             }
         }
         exceptionHandler(404, " Role ".concat(userRole).concat(" Not Available to added to User ").concat(userName));
+        return null;
+    }
+
+    public String removeUserRole(String realmName, String userName, String userRole) {
+        UsersResource userResource = getUsers(realmName);
+        UserRepresentation usr = getUserByUserName(realmName, userName);
+        List<RoleRepresentation> roleRepresentations = getUserRoleEffective(realmName, usr.getId());
+        for (RoleRepresentation roleRepresentation : roleRepresentations) {
+            if (roleRepresentation.getName().equals(userRole)) {
+                userResource.get(usr.getId()).roles().realmLevel().remove(Arrays.asList(roleRepresentation));
+                return SUCCESS;
+            }
+        }
+        exceptionHandler(404, " Role ".concat(userRole).concat(" Not Available to Remove from User ").concat(userName));
         return null;
     }
 
