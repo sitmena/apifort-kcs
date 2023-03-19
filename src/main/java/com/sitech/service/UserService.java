@@ -53,7 +53,7 @@ public class UserService {
                 addUserToGroup(request.getRealmName(), request.getUserName(), request.getGroup());
             }
         }else{
-            exceptionHandler(401 , "UnAuthorize");
+            exceptionHandler(409 , "User Already Exist.");
         }
         return response;
     }
