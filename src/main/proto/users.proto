@@ -27,9 +27,13 @@ service UserService {
 
   rpc AddUserToGroup(AddUserGroupRequest) returns(StatusReplay) {};
 
+  rpc RemoveUserFromGroup(RemoveUserFromGroupRequest) returns(StatusReplay) {};
+
   rpc FindUserByRole(FindUserRoleRequest) returns(UsersResponse) {};
 
   rpc AddUserRole(AddUserRoleRequest) returns(StatusReplay) {};
+
+  rpc RemoveUserRole(RemoveUserRoleRequest) returns(StatusReplay) {};
 
   rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {};
 
@@ -103,12 +107,24 @@ message AddUserRoleRequest{
   string roleName = 3;
 }
 
+message RemoveUserRoleRequest{
+  string realmName = 1;
+  string userName = 2;
+  string roleName = 3;
+}
+
 message FindUserRoleRequest{
   string realmName = 1;
   string roleName = 2;
 }
 
 message AddUserGroupRequest{
+  string realmName = 1;
+  string userName = 2;
+  string groupName = 3;
+}
+
+message RemoveUserFromGroupRequest{
   string realmName = 1;
   string userName = 2;
   string groupName = 3;
@@ -166,6 +182,8 @@ message StatusReplay {
 
 message GetUsersRequest{
   string realmName = 1;
+  int32 from = 2;
+  int32 size = 3;
 }
 
 message updateUserAttributesRequest{

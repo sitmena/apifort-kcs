@@ -186,7 +186,19 @@ public class UserService {
             }
         }
         exceptionHandler(404, "Group ".concat(groupName).concat(NOT_FOUND));
-        return "";
+        return null;
+    }
+    public String removeUserFromGroup(String realmName, String userName, String groupName) {
+        UserRepresentation usr = getUserByUserName(realmName, userName);
+        List<GroupRepresentation> groupLst = realmService.getRealmGroups(realmName);
+        for (GroupRepresentation gr : groupLst) {
+            if (gr.getName().equals(groupName)) {
+                realmService.getRealmByName(realmName).users().get(usr.getId()).leaveGroup(gr.getId());
+                return SUCCESS;
+            }
+        }
+        exceptionHandler(404, "Group ".concat(groupName).concat(NOT_FOUND));
+        return null;
     }
 
     public Collection<UserRepresentation> findUserByRole(String realmName, String roleName) {
@@ -212,6 +224,20 @@ public class UserService {
             }
         }
         exceptionHandler(404, " Role ".concat(userRole).concat(" Not Available to added to User ").concat(userName));
+        return null;
+    }
+
+    public String removeUserRole(String realmName, String userName, String userRole) {
+        UsersResource userResource = getUsers(realmName);
+        UserRepresentation usr = getUserByUserName(realmName, userName);
+        List<RoleRepresentation> roleRepresentations = getUserRoleEffective(realmName, usr.getId());
+        for (RoleRepresentation roleRepresentation : roleRepresentations) {
+            if (roleRepresentation.getName().equals(userRole)) {
+                userResource.get(usr.getId()).roles().realmLevel().remove(Arrays.asList(roleRepresentation));
+                return SUCCESS;
+            }
+        }
+        exceptionHandler(404, " Role ".concat(userRole).concat(" Not Available to Remove from User ").concat(userName));
         return null;
     }
 
@@ -268,7 +294,32 @@ public class UserService {
     }
 
     public List<UserRepresentation> getAllUsersByRealm(GetUsersRequest request) {
-        return realmService.getRealmByName(request.getRealmName()).users().list();
+
+        if (request == null) {
+            exceptionHandler(400, "request cannot be null");
+            return Collections.emptyList();
+        }
+
+        List<UserRepresentation> userRepresentations;
+        if (request.getFrom() >= 0 && request.getSize() > 0 ) {
+            userRepresentations = realmService.getRealmByName(request.getRealmName()).users().list(request.getFrom(), request.getSize());
+        } else {
+            userRepresentations = realmService.getRealmByName(request.getRealmName()).users().list();
+        }
+
+        if (userRepresentations.isEmpty()) {
+            exceptionHandler(404, "Realm Users is Empty");
+            return Collections.emptyList();
+        }
+
+        List<UserRepresentation> users = new ArrayList<>();
+        for (UserRepresentation usr : userRepresentations) {
+            usr.setRealmRoles(getUserRoleAsString(getUserRoleEffective(request.getRealmName(), usr.getId())));
+            usr.setGroups(getUserGroupAsString(getUserGroups(request.getRealmName(), usr.getId())));
+            users.add(usr);
+        }
+
+        return users;
     }
 
     public UserRepresentation updateUserAttributes(updateUserAttributesRequest request) {
