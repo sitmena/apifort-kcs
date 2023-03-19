@@ -84,6 +84,12 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     }
 
     @Override
+    public Uni<StatusReplay> removeUserFromGroup(RemoveUserFromGroupRequest request) {
+        String status = userService.removeUserFromGroup(request.getRealmName(), request.getUserName(), request.getGroupName());
+        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
+    }
+
+    @Override
     public Uni<UsersResponse> findUserByRole(FindUserRoleRequest request) {
         List<UserRepresentation> newUserRepresentations = new ArrayList<>(userService.findUserByRole(request.getRealmName(), request.getRoleName()));
         return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(newUserRepresentations)).build());
@@ -92,6 +98,12 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     @Override
     public Uni<com.sitech.users.StatusReplay> addUserRole(com.sitech.users.AddUserRoleRequest request) {
         String status = userService.addUserRole(request.getRealmName(), request.getUserName(), request.getRoleName());
+        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).setResponseMessage("").build());
+    }
+
+    @Override
+    public Uni<StatusReplay> removeUserRole(RemoveUserRoleRequest request) {
+        String status = userService.removeUserRole(request.getRealmName(), request.getUserName(), request.getRoleName());
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).setResponseMessage("").build());
     }
 
