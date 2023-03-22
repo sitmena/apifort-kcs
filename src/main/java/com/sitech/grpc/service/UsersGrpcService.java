@@ -108,6 +108,12 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     }
 
     @Override
+    public Uni<StatusReplay> removeUserRoles(RemoveUserRolesRequest request) {
+        String status = userService.removeUserRoles(request.getRealmName(), request.getUserId(), request.getRoleNameList());
+        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).setResponseMessage("").build());
+    }
+
+    @Override
     public Uni<UserResponse> updateUser(UpdateUserRequest updateUserRequest) {
         UserRepresentation response = userService.updateUser(updateUserRequest);
         return Uni.createFrom().item(() -> UserResponse.newBuilder().setUserDto(dtoMapper.toUser(response)).build());
@@ -157,6 +163,19 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     public Uni<StatusReplay> sendResetPassword(SendResetPasswordRequest request) {
         String status = userService.sendResetPassword(request);
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
+    }
+
+    @Override
+    public Uni<UsersResponse> findUserByRoles(FindUserRolesRequest request) {
+//        userService.findUserByRoles(request);
+        List<UserRepresentation> newUserRepresentations = new ArrayList<>(userService.findUserByRoles(request.getRealmName(), request.getRoleNameList()));
+        return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(newUserRepresentations)).build());
+    }
+
+    @Override
+    public Uni<UsersResponse> findUsersByRoleAndGroup(FindUsersByRoleAndGroupRequest request) {
+        List<UserRepresentation> userRepresentations = userService.findUsersByRoleAndGroup(request);
+        return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(userRepresentations)).build());
     }
 
 }

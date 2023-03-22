@@ -4,8 +4,6 @@ import "dto.proto";
 
 option java_multiple_files = true;
 option java_package = "com.sitech.users";
-//import "google/protobuf/any.proto";
-//import "google/protobuf/struct.proto";
 
 service UserService {
 
@@ -35,6 +33,8 @@ service UserService {
 
   rpc RemoveUserRole(RemoveUserRoleRequest) returns(StatusReplay) {};
 
+  rpc RemoveUserRoles(RemoveUserRolesRequest) returns(StatusReplay) {};
+
   rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {};
 
   rpc UpdateUserPassword(UpdateUserPasswordRequest) returns (StatusReplay) {};
@@ -50,6 +50,9 @@ service UserService {
   rpc SendVerificationLink(SendVerificationLinkRequest) returns (StatusReplay){};
 
   rpc SendResetPassword(SendResetPasswordRequest) returns (StatusReplay){};
+
+  rpc FindUserByRoles(FindUserRolesRequest) returns(UsersResponse) {};
+  rpc FindUsersByRoleAndGroup(FindUsersByRoleAndGroupRequest) returns(UsersResponse) {};
 
 }
 
@@ -113,9 +116,20 @@ message RemoveUserRoleRequest{
   string roleName = 3;
 }
 
+message RemoveUserRolesRequest{
+  string realmName = 1;
+  string userId = 2;
+  repeated string roleName = 3;
+}
+
 message FindUserRoleRequest{
   string realmName = 1;
   string roleName = 2;
+}
+
+message FindUserRolesRequest{
+  string realmName = 1;
+  repeated string roleName = 2;
 }
 
 message AddUserGroupRequest{
@@ -184,6 +198,14 @@ message GetUsersRequest{
   string realmName = 1;
   int32 from = 2;
   int32 size = 3;
+}
+
+message FindUsersByRoleAndGroupRequest {
+  string realmName = 1;
+  repeated string role = 2;
+  repeated string group = 3;
+  int32 pageNumber = 4;
+  int32 pageSize = 5;
 }
 
 message updateUserAttributesRequest{

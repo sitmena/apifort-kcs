@@ -1,9 +1,11 @@
 package com.sitech.service;
 
 
+import com.google.protobuf.ProtocolStringList;
 import com.sitech.exception.ApiFortException;
 import com.sitech.exception.DataConflictException;
 import com.sitech.users.*;
+import com.sitech.util.Page;
 import io.quarkus.security.UnauthorizedException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,9 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import com.sitech.exception.ErrorResponse;
 
 @ApplicationScoped
@@ -63,7 +68,7 @@ public class UserService {
         try {
             UserResource userRepresentations = realmService.getRealmByName(realmName).users().get(userId);
             user = userRepresentations.toRepresentation();
-            user.setRealmRoles(getUserRoleAsString(getUserRoleAvailable(realmName, userId)));
+            user.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, userId)));
             user.setGroups(getUserGroupAsString(getUserGroups(realmName, userId)));
         } catch (Exception ex) {
             exceptionHandler(404, ex.getMessage());
@@ -103,7 +108,7 @@ public class UserService {
         if (!userRepresentations.isEmpty()) {
             for (UserRepresentation usr : userRepresentations) {
                 if (usr.getEmail().equals(userEmail)) {
-                    usr.setRealmRoles(getUserRoleAsString(getUserRoleAvailable(realmName, usr.getId())));
+                    usr.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, usr.getId())));
                     usr.setGroups(getUserGroupAsString(getUserGroups(realmName, usr.getId())));
                     return usr;
                 }
@@ -168,7 +173,14 @@ public class UserService {
         List<GroupRepresentation> groupRepresentations = realmService.getRealmByName(realmName).groups().groups();
         for (GroupRepresentation group : groupRepresentations) {
             if (group.getName().equalsIgnoreCase(groupName)) {
-                return realmService.getRealmByName(realmName).groups().group(group.getId()).members();
+                List<UserRepresentation> userRepresentations = realmService.getRealmByName(realmName).groups().group(group.getId()).members();
+                userRepresentations.stream().forEach(
+                        combine(
+                                user -> user.setGroups(getUserGroupAsString(getUserGroups(realmName, user.getId()))) ,
+                                user -> user.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, user.getId())))
+                        )
+                );
+                return userRepresentations;
             }
         }
         exceptionHandler(404, "Group ".concat(groupName).concat(" doesn't have any member"));
@@ -207,10 +219,36 @@ public class UserService {
         try {
             roleResource = realmService.getRealmByName(realmName).roles().get(roleName);
             userRepresentations = roleResource.getRoleUserMembers();
+            userRepresentations.stream().forEach(
+                    combine(
+                            user -> user.setGroups(getUserGroupAsString(getUserGroups(realmName, user.getId()))) ,
+                            user -> user.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, user.getId())))
+                    )
+            );
         } catch (Exception ex) {
-            exceptionHandler(404, "No User For ".concat(roleName).concat(" Role"));
+            log.error(ex.getMessage());
+            exceptionHandler(404, "No Users For ".concat(roleName).concat(" Role"));
         }
         return userRepresentations;
+    }
+
+
+
+    public Collection<UserRepresentation> findUserByRoles(String realmName, List<String> roles) {
+        Set<UserRepresentation> userRepresentations = null;
+        ArrayList<UserRepresentation> users = new ArrayList<>();
+            List<RoleRepresentation> listOfRole = realmService.getRealmByName(realmName).roles().list().stream().filter(e -> roles.contains(e.getName())).toList();
+            for(RoleRepresentation role : listOfRole){
+                userRepresentations = realmService.getRealmByName(realmName).roles().get(role.getName()).getRoleUserMembers();
+                userRepresentations.stream().forEach(
+                        combine(
+                                user -> user.setGroups(getUserGroupAsString(getUserGroups(realmName, user.getId()))) ,
+                                user -> user.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, user.getId())))
+                        )
+                );
+                users.addAll(userRepresentations);
+            }
+        return users;
     }
 
     public String addUserRole(String realmName, String userName, String userRole) {
@@ -238,6 +276,21 @@ public class UserService {
             }
         }
         exceptionHandler(404, " Role ".concat(userRole).concat(" Not Available to Remove from User ").concat(userName));
+        return null;
+    }
+
+    public String removeUserRoles(String realmName, String userId, ProtocolStringList roleNameList) {
+        UsersResource userResource = getUsers(realmName);
+        UserRepresentation usr = getUserById(realmName, userId);
+        List<RoleRepresentation> roleRepresentations = getUserRoleEffective(realmName, usr.getId());
+        List<RoleRepresentation> filteredRole = roleRepresentations.stream().filter(c-> roleNameList.contains(c.getName())).toList();
+        if(!filteredRole.isEmpty()){
+                for (RoleRepresentation roleRepresentation : filteredRole) {
+                    userResource.get(usr.getId()).roles().realmLevel().remove(Arrays.asList(roleRepresentation));
+                }
+            return SUCCESS;
+        }
+        exceptionHandler(404, " Roles Not Available to Remove from User ".concat(usr.getUsername()));
         return null;
     }
 
@@ -279,7 +332,7 @@ public class UserService {
 
         }
         userResource.update(userRepresentation);
-        return realmService.getRealmByName(updateUserRequest.getRealmName()).users().get(updateUserRequest.getUserId()).toRepresentation();
+        return getUserById(updateUserRequest.getRealmName(),updateUserRequest.getUserId());
     }
 
     public String updateUserPassword(UpdateUserPasswordRequest request) {
@@ -312,14 +365,14 @@ public class UserService {
             return Collections.emptyList();
         }
 
-        List<UserRepresentation> users = new ArrayList<>();
-        for (UserRepresentation usr : userRepresentations) {
-            usr.setRealmRoles(getUserRoleAsString(getUserRoleEffective(request.getRealmName(), usr.getId())));
-            usr.setGroups(getUserGroupAsString(getUserGroups(request.getRealmName(), usr.getId())));
-            users.add(usr);
-        }
+        userRepresentations.stream().forEach(
+                combine(
+                        user -> user.setGroups(getUserGroupAsString(getUserGroups(request.getRealmName(), user.getId()))) ,
+                        user -> user.setRealmRoles(getUserRoleAsString(getUserRoleEffective(request.getRealmName(), user.getId())))
+                )
+        );
 
-        return users;
+        return userRepresentations;
     }
 
     public UserRepresentation updateUserAttributes(updateUserAttributesRequest request) {
@@ -424,10 +477,55 @@ public class UserService {
         try {
             RealmResource realmResource = realmService.getRealmByName(realmName);
             userResource = realmResource.users();
+
         } catch (Exception ex) {
             exceptionHandler(404, "No Users In ".concat(realmName));
         }
         return userResource;
     }
 
+    public List<UserRepresentation> findUsersByRoleAndGroup(FindUsersByRoleAndGroupRequest request) {
+        getAllUsersByRealm(GetUsersRequest.newBuilder().setRealmName(request.getRealmName()).build());
+        Collection<UserRepresentation> usersInRole = findUserByRoles(request.getRealmName(),request.getRoleList());
+        ProtocolStringList groups = request.getGroupList();
+        List<UserRepresentation> userLst = new ArrayList<>();
+
+        for(UserRepresentation user : usersInRole){
+            for (String group: groups ) {
+                if(user.getGroups().contains(group)){
+                 userLst.add(user);
+                }
+            }
+        }
+        return getPage(userLst,request.getPageNumber(),request.getPageSize()).getItems();
+    }
+
+
+    private Page<UserRepresentation> getPage(List<UserRepresentation> userRepresentations, int pageNumber , int pageSize) {
+        int skipCount = (pageNumber - 1) * pageSize;
+
+        List<UserRepresentation> activityPage = userRepresentations
+                .stream()
+                .skip(skipCount)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+
+        return new Page<>(pageNumber, pageSize ,userRepresentations.size(), activityPage);
+    }
+    public <T> List<List<T>> getPages(Collection<T> c, Integer pageSize) {
+        if (c == null)
+            return Collections.emptyList();
+        List<T> list = new ArrayList<T>(c);
+        if (pageSize == null || pageSize <= 0 || pageSize > list.size())
+            pageSize = list.size();
+        int numPages = (int) Math.ceil((double)list.size() / (double)pageSize);
+        List<List<T>> pages = new ArrayList<List<T>>(numPages);
+        for (int pageNum = 0; pageNum < numPages;)
+            pages.add(list.subList(pageNum * pageSize, Math.min(++pageNum * pageSize, list.size())));
+        return pages;
+    }
+
+    public static <T> Consumer<T> combine(Consumer<? super T>... consumers){
+        return (T t) ->   Arrays.stream(consumers).forEach(c -> c.accept(t));
+    }
 }
