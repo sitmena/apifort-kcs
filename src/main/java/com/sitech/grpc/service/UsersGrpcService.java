@@ -107,11 +107,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).setResponseMessage("").build());
     }
 
-    @Override
-    public Uni<StatusReplay> removeUserRoles(RemoveUserRolesRequest request) {
-        String status = userService.removeUserRoles(request.getRealmName(), request.getUserId(), request.getRoleNameList());
-        return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).setResponseMessage("").build());
-    }
 
     @Override
     public Uni<UserResponse> updateUser(UpdateUserRequest updateUserRequest) {
@@ -163,13 +158,6 @@ public class UsersGrpcService implements com.sitech.users.UserService {
     public Uni<StatusReplay> sendResetPassword(SendResetPasswordRequest request) {
         String status = userService.sendResetPassword(request);
         return Uni.createFrom().item(() -> StatusReplay.newBuilder().setStatusCode(status).build());
-    }
-
-    @Override
-    public Uni<UsersResponse> findUserByRoles(FindUserRolesRequest request) {
-//        userService.findUserByRoles(request);
-        List<UserRepresentation> newUserRepresentations = new ArrayList<>(userService.findUserByRoles(request.getRealmName(), request.getRoleNameList()));
-        return Uni.createFrom().item(() -> UsersResponse.newBuilder().addAllUserDto(dtoMapper.toUserList(newUserRepresentations)).build());
     }
 
     @Override

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.sitech</groupId>
     <artifactId>api-fort-admin</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.2.0</version>
     <properties>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
@@ -16,6 +16,13 @@
         <quarkus.platform.version>2.16.3.Final</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
+
+        <!-- Sonar Configuration -->
+        <sonar.projectKey>apifort-gateway</sonar.projectKey>
+        <sonar.organization>sitech</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.sources>src/main/java</sonar.sources>
+
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -135,52 +142,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.7.0.0</version>
-                <dependencies>
-                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-                    <dependency>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs</artifactId>
-                        <version>4.7.1</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <excludeFilterFile>spotbugs-security-exclude.xml</excludeFilterFile>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>dockerfile-maven-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.owasp</groupId>
-                <artifactId>dependency-check-maven</artifactId>
-                <version>7.1.1</version>
-                <configuration>
-                    <!-- .Disable Net content-->
-                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
-                    <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
-                    <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin.version}</version>
@@ -220,8 +181,65 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M7</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <quarkus.test.profile>unit</quarkus.test.profile>
+                        <buildDirectory>${project.build.directory}</buildDirectory>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.7.0.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs</artifactId>
+                        <version>4.7.1</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <excludeFilterFile>.ci-tools-cfg/spotbugs-security-exclude.xml</excludeFilterFile>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>8.0.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    <nugetconfAnalyzerEnabled>false</nugetconfAnalyzerEnabled>
+                    <nuspecAnalyzerEnabled>false</nuspecAnalyzerEnabled>
+                    <skipProvidedScope>true</skipProvidedScope>
+                    <skipRuntimeScope>true</skipRuntimeScope>
+                    <skipTestScope>true</skipTestScope>
+                    <failBuildOnCVSS>10</failBuildOnCVSS>
+                    <suppressionFiles>.ci-tools-cfg/dependency-check-suppression.xml</suppressionFiles>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
     <profiles>
         <profile>
             <id>native</id>

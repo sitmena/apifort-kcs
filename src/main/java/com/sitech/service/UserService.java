@@ -214,40 +214,22 @@ public class UserService {
     }
 
     public Collection<UserRepresentation> findUserByRole(String realmName, String roleName) {
-        RoleResource roleResource = null;
+
+        List<String> roles = Arrays.stream(roleName.split(",")).toList();
+
         Set<UserRepresentation> userRepresentations = null;
-        try {
-            roleResource = realmService.getRealmByName(realmName).roles().get(roleName);
-            userRepresentations = roleResource.getRoleUserMembers();
+        ArrayList<UserRepresentation> users = new ArrayList<>();
+        List<RoleRepresentation> listOfRole = realmService.getRealmByName(realmName).roles().list().stream().filter(e -> roles.contains(e.getName())).toList();
+        for(RoleRepresentation role : listOfRole){
+            userRepresentations = realmService.getRealmByName(realmName).roles().get(role.getName()).getRoleUserMembers();
             userRepresentations.stream().forEach(
                     combine(
                             user -> user.setGroups(getUserGroupAsString(getUserGroups(realmName, user.getId()))) ,
                             user -> user.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, user.getId())))
                     )
             );
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            exceptionHandler(404, "No Users For ".concat(roleName).concat(" Role"));
+            users.addAll(userRepresentations);
         }
-        return userRepresentations;
-    }
-
-
-
-    public Collection<UserRepresentation> findUserByRoles(String realmName, List<String> roles) {
-        Set<UserRepresentation> userRepresentations = null;
-        ArrayList<UserRepresentation> users = new ArrayList<>();
-            List<RoleRepresentation> listOfRole = realmService.getRealmByName(realmName).roles().list().stream().filter(e -> roles.contains(e.getName())).toList();
-            for(RoleRepresentation role : listOfRole){
-                userRepresentations = realmService.getRealmByName(realmName).roles().get(role.getName()).getRoleUserMembers();
-                userRepresentations.stream().forEach(
-                        combine(
-                                user -> user.setGroups(getUserGroupAsString(getUserGroups(realmName, user.getId()))) ,
-                                user -> user.setRealmRoles(getUserRoleAsString(getUserRoleEffective(realmName, user.getId())))
-                        )
-                );
-                users.addAll(userRepresentations);
-            }
         return users;
     }
 
@@ -266,34 +248,22 @@ public class UserService {
     }
 
     public String removeUserRole(String realmName, String userName, String userRole) {
+
+        List roleNameList = Arrays.stream(userRole.split(",")).toList();
         UsersResource userResource = getUsers(realmName);
         UserRepresentation usr = getUserByUserName(realmName, userName);
         List<RoleRepresentation> roleRepresentations = getUserRoleEffective(realmName, usr.getId());
-        for (RoleRepresentation roleRepresentation : roleRepresentations) {
-            if (roleRepresentation.getName().equals(userRole)) {
+
+        List<RoleRepresentation> filteredRole = roleRepresentations.stream().filter(c-> roleNameList.contains(c.getName())).toList();
+        if(!filteredRole.isEmpty()){
+            for (RoleRepresentation roleRepresentation : filteredRole) {
                 userResource.get(usr.getId()).roles().realmLevel().remove(Arrays.asList(roleRepresentation));
-                return SUCCESS;
             }
+            return SUCCESS;
         }
         exceptionHandler(404, " Role ".concat(userRole).concat(" Not Available to Remove from User ").concat(userName));
         return null;
     }
-
-    public String removeUserRoles(String realmName, String userId, ProtocolStringList roleNameList) {
-        UsersResource userResource = getUsers(realmName);
-        UserRepresentation usr = getUserById(realmName, userId);
-        List<RoleRepresentation> roleRepresentations = getUserRoleEffective(realmName, usr.getId());
-        List<RoleRepresentation> filteredRole = roleRepresentations.stream().filter(c-> roleNameList.contains(c.getName())).toList();
-        if(!filteredRole.isEmpty()){
-                for (RoleRepresentation roleRepresentation : filteredRole) {
-                    userResource.get(usr.getId()).roles().realmLevel().remove(Arrays.asList(roleRepresentation));
-                }
-            return SUCCESS;
-        }
-        exceptionHandler(404, " Roles Not Available to Remove from User ".concat(usr.getUsername()));
-        return null;
-    }
-
 
     public UserRepresentation updateUser(UpdateUserRequest updateUserRequest) {
 
@@ -486,8 +456,8 @@ public class UserService {
 
     public List<UserRepresentation> findUsersByRoleAndGroup(FindUsersByRoleAndGroupRequest request) {
         getAllUsersByRealm(GetUsersRequest.newBuilder().setRealmName(request.getRealmName()).build());
-        Collection<UserRepresentation> usersInRole = findUserByRoles(request.getRealmName(),request.getRoleList());
-        ProtocolStringList groups = request.getGroupList();
+        Collection<UserRepresentation> usersInRole = findUserByRole(request.getRealmName(),String.join(",",request.getRoles()));
+        List<String> groups = Arrays.stream(request.getGroups().split(",")).toList();
         List<UserRepresentation> userLst = new ArrayList<>();
 
         for(UserRepresentation user : usersInRole){
@@ -502,14 +472,15 @@ public class UserService {
 
 
     private Page<UserRepresentation> getPage(List<UserRepresentation> userRepresentations, int pageNumber , int pageSize) {
+        if(pageNumber >= 0){
+            pageNumber = 1;
+        }
         int skipCount = (pageNumber - 1) * pageSize;
-
         List<UserRepresentation> activityPage = userRepresentations
                 .stream()
                 .skip(skipCount)
                 .limit(pageSize)
                 .collect(Collectors.toList());
-
         return new Page<>(pageNumber, pageSize ,userRepresentations.size(), activityPage);
     }
     public <T> List<List<T>> getPages(Collection<T> c, Integer pageSize) {
